@@ -158,40 +158,81 @@ const TrainCabin: React.FC = () => {
                          engineStarting ? 'STARTING...' : 'STOP ENGINE'}
                     </button>
                 </div>
+
+                {/* Additional Meters */}
+                <div className="left-panel-meters">
+                    {/* Power Output Meter */}
+                    <div className="meter-container">
+                        <div className="meter-label">POWER OUTPUT</div>
+                        <div className="meter-visual">
+                            <div 
+                                className="meter-fill" 
+                                style={{ width: `${throttlePosition}%` }}
+                            ></div>
+                        </div>
+                        <div className="meter-value">{throttlePosition}%</div>
+                    </div>
+
+                    {/* Traction Meter */}
+                    <div className="meter-container">
+                        <div className="meter-label">TRACTION</div>
+                        <div className="meter-visual">
+                            <div 
+                                className="meter-fill traction-fill" 
+                                style={{ width: `${Math.min(100, speed * 2)}%` }}
+                            ></div>
+                        </div>
+                        <div className="meter-value">{Math.min(100, Math.round(speed * 2))}%</div>
+                    </div>
+
+                    {/* Brake Pressure Meter */}
+                    <div className="meter-container">
+                        <div className="meter-label">BRAKE PRESSURE</div>
+                        <div className="meter-visual">
+                            <div 
+                                className="meter-fill brake-fill" 
+                                style={{ width: `${brakePressure}%` }}
+                            ></div>
+                        </div>
+                        <div className="meter-value">{brakePressure}%</div>
+                    </div>
+                </div>
             </div>
             
             {/* Center Panel - Main Gauges */}
             <div className="center-panel">
-                {/* Acceleration Gauge */}
-                <div className="gauge acceleration-gauge">
-                    <div className="gauge-title">ACCELERATION</div>
-                    <div className="gauge-display">
-                        <div className="gauge-needle" style={{ 
-                            transform: `rotate(${Math.min(Math.max((speed - prevSpeed) * 10, -90), 90)}deg)` 
-                        }}></div>
-                        <div className="gauge-value">{(speed - prevSpeed).toFixed(1)} m/s²</div>
+                <div className="gauge-container">
+                    {/* Acceleration Gauge */}
+                    <div className="gauge acceleration-gauge">
+                        <div className="gauge-title">ACCELERATION</div>
+                        <div className="gauge-display">
+                            <div className="gauge-needle" style={{ 
+                                transform: `rotate(${Math.min(Math.max((speed - prevSpeed) * 10, -90), 90)}deg)` 
+                            }}></div>
+                            <div className="gauge-value">{(speed - prevSpeed).toFixed(1)} m/s²</div>
+                        </div>
                     </div>
-                </div>
-                
-                {/* Locomotive Speed Gauge */}
-                <div className="gauge speed-gauge">
-                    <div className="gauge-title">LOCOMOTIVE SPEED</div>
-                    <div className="gauge-display">
-                        <div className="gauge-needle" style={{ 
-                            transform: `rotate(${(speed / 200) * 180 - 90}deg)` 
-                        }}></div>
-                        <div className="gauge-value">{speed.toFixed(1)} km/h</div>
+                    
+                    {/* Locomotive Speed Gauge */}
+                    <div className="gauge speed-gauge">
+                        <div className="gauge-title">LOCOMOTIVE SPEED</div>
+                        <div className="gauge-display">
+                            <div className="gauge-needle" style={{ 
+                                transform: `rotate(${(speed / 200) * 180 - 90}deg)` 
+                            }}></div>
+                            <div className="gauge-value">{speed.toFixed(1)} km/h</div>
+                        </div>
                     </div>
-                </div>
-                
-                {/* Power Efficiency Gauge */}
-                <div className="gauge efficiency-gauge">
-                    <div className="gauge-title">POWER EFFICIENCY</div>
-                    <div className="gauge-display">
-                        <div className="gauge-needle" style={{ 
-                            transform: `rotate(${Math.min(90, Math.max(-90, (throttlePosition - 50) * 1.8))}deg)` 
-                        }}></div>
-                        <div className="gauge-value">{throttlePosition}%</div>
+                    
+                    {/* Power Efficiency Gauge */}
+                    <div className="gauge efficiency-gauge">
+                        <div className="gauge-title">POWER EFFICIENCY</div>
+                        <div className="gauge-display">
+                            <div className="gauge-needle" style={{ 
+                                transform: `rotate(${Math.min(90, Math.max(-90, (throttlePosition - 50) * 1.8))}deg)` 
+                            }}></div>
+                            <div className="gauge-value">{throttlePosition}%</div>
+                        </div>
                     </div>
                 </div>
             </div>
