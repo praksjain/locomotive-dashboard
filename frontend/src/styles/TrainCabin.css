@@ -459,4 +459,307 @@
 
 .green-button {
     background: linear-gradient(145deg, #27ae60, #2ecc71);
+}
+
+/* Module Containers */
+.module-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid #456789;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    width: 100%;
+}
+
+.wide-module {
+    width: 100%;
+}
+
+.modules-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.module-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #3498db;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.module-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Circular Buttons */
+.circular-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #34495e;
+    background: radial-gradient(circle at center, #2c3e50, #1a2533);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.large-button {
+    width: 80px;
+    height: 80px;
+}
+
+.circular-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+}
+
+.circular-button:active {
+    transform: scale(0.95);
+}
+
+.circular-button.active {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.7);
+    border-color: #2ecc71;
+}
+
+.button-icon {
+    font-size: 24px;
+    color: #ecf0f1;
+}
+
+/* Button Colors */
+.success-color {
+    background: radial-gradient(circle at center, #27ae60, #2ecc71);
+}
+
+.warning-color {
+    background: radial-gradient(circle at center, #f39c12, #f1c40f);
+}
+
+.danger-color {
+    background: radial-gradient(circle at center, #c0392b, #e74c3c);
+}
+
+.emergency-color {
+    background: radial-gradient(circle at center, #e74c3c, #c0392b);
+}
+
+.neutral-color {
+    background: radial-gradient(circle at center, #7f8c8d, #95a5a6);
+}
+
+.light-button {
+    background: radial-gradient(circle at center, #bdc3c7, #ecf0f1);
+    border-color: #7f8c8d;
+}
+
+.dark-button {
+    background: radial-gradient(circle at center, #2c3e50, #34495e);
+    border-color: #2c3e50;
+}
+
+/* Emergency Button Large */
+.emergency-button-large {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.emergency-stop-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #e74c3c;
+    border: 5px solid #f1c40f;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.7);
+    transition: all 0.3s ease;
+}
+
+.emergency-stop-large:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(231, 76, 60, 0.9);
+}
+
+.emergency-stop-large:active {
+    transform: scale(0.95);
+    background: #c0392b;
+}
+
+/* Speed Module */
+.speed-module {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+}
+
+.speed-slider-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    gap: 60px;
+}
+
+.speed-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-track {
+    width: 40px;
+    height: 200px;
+    background: #2c3e50;
+    border-radius: 5px;
+    position: relative;
+    border: 2px solid #456789;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.brake-track {
+    background: linear-gradient(to top, #e74c3c, #2c3e50);
+}
+
+.slider-handle {
+    position: absolute;
+    width: 50px;
+    height: 20px;
+    background: #ecf0f1;
+    left: -5px;
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.slider-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+/* Controller Module */
+.controller-module {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.controller-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+}
+
+.controller-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.controller-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+/* Controller Buttons */
+.controller-button {
+    width: 80px;
+    height: 80px;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.controller-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+.controller-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.controller-button.active {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.7);
+    border: 2px solid #2ecc71;
+}
+
+.controller-button.dark-button {
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+}
+
+.controller-button.light-button {
+    background: linear-gradient(145deg, #7f8c8d, #95a5a6);
+}
+
+.button-text {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ecf0f1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Direction Module */
+.direction-module {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Startup Module */
+.startup-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.startup-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.indicator-light {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #7f8c8d;
+    border: 1px solid #ecf0f1;
+}
+
+.indicator-light.active {
+    background: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.7);
+}
+
+.indicator-label {
+    font-size: 14px;
+    color: #ecf0f1;
 } 

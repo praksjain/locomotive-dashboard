@@ -4,7 +4,9 @@ import { RootState } from '../store';
 import { WebSocketService } from '../services/WebSocketService';
 import { EnhancedSoundService } from '../services/EnhancedSoundService';
 import { updateSimulation } from '../store/simulationSlice';
+import ControllerModule from './ControllerModule';
 import '../styles/TrainCabin.css';
+import '../styles/ControllerModule.css';
 
 const TrainCabin: React.FC = () => {
     const dispatch = useDispatch();
@@ -35,6 +37,7 @@ const TrainCabin: React.FC = () => {
     const [defrostOn, setDefrostOn] = useState(false);
     const [batteryIsolated, setBatteryIsolated] = useState(false);
     const [reverserPosition, setReverserPosition] = useState('neutral');
+    const [fanActive, setFanActive] = useState(false);
 
     useEffect(() => {
         console.log('Initializing WebSocket service...');
@@ -138,11 +141,21 @@ const TrainCabin: React.FC = () => {
         });
     };
 
+    // Add a useEffect to log signal changes
+    useEffect(() => {
+        console.log(`Signal state updated in Redux: ${signal}`);
+    }, [signal]);
+
     const handleSignalChange = (newSignal: string) => {
         console.log(`Changing signal to: ${newSignal}`);
         
         // Send update to backend - the WebSocketService will update Redux
-        wsRef.current?.sendUpdate({ signal: newSignal });
+        if (wsRef.current) {
+            console.log(`WebSocket reference exists, sending signal: ${newSignal}`);
+            wsRef.current.sendUpdate({ signal: newSignal });
+        } else {
+            console.error('WebSocket reference is null or undefined');
+        }
         
         // Force update the local state for immediate UI feedback
         document.getElementById('red-signal-light')?.classList.remove('active');
@@ -158,6 +171,56 @@ const TrainCabin: React.FC = () => {
             signalValueElement.textContent = newSignal.toUpperCase();
         }
     };
+
+    const handleDoorToggle = () => {
+        setDoorLocked(!doorLocked);
+    };
+
+    const handleLightsToggle = () => {
+        const newState = !headlightsOn;
+        setHeadlightsOn(newState);
+        console.log(`Toggling headlights to: ${newState ? 'ON' : 'OFF'}`);
+        // You can add WebSocket update here if needed
+        // wsRef.current?.sendUpdate({ headlights: newState });
+    };
+
+    const handleHornActivate = () => {
+        setHornActive(true);
+        console.log('Horn activated');
+        // You can add WebSocket update here if needed
+        // wsRef.current?.sendUpdate({ horn: true });
+        
+        setTimeout(() => {
+            setHornActive(false);
+            console.log('Horn deactivated');
+            // wsRef.current?.sendUpdate({ horn: false });
+        }, 1000);
+    };
+
+    const handleDirectionChange = (direction: string) => {
+        setReverserPosition(direction);
+    };
+
+    // Add useEffect hooks to log state changes for debugging
+    useEffect(() => {
+        console.log(`Headlights state: ${headlightsOn ? 'ON' : 'OFF'}`);
+    }, [headlightsOn]);
+
+    useEffect(() => {
+        console.log(`Cabin lights state: ${cabinLightsOn ? 'ON' : 'OFF'}`);
+    }, [cabinLightsOn]);
+
+    useEffect(() => {
+        console.log(`Ventilation state: ${ventilationOn ? 'ON' : 'OFF'}`);
+    }, [ventilationOn]);
+
+    useEffect(() => {
+        console.log(`Defrost state: ${defrostOn ? 'ON' : 'OFF'}`);
+    }, [defrostOn]);
+
+    useEffect(() => {
+        console.log(`Horn active: ${hornActive ? 'YES' : 'NO'}`);
+    }, [hornActive]);
 
     return (
         <div className="locomotive-dashboard">
@@ -217,6 +280,31 @@ const TrainCabin: React.FC = () => {
                             ></div>
                         </div>
                         <div className="meter-value">{brakePressure}%</div>
+                    </div>
+                </div>
+
+                {/* Train Protection Module */}
+                <div className="module-container">
+                    <div className="module-title">Train Protection Module</div>
+                    <div className="module-content">
+                        <button 
+                            className={`circular-button emergency-color ${parkingBrakeOn ? 'active' : ''}`}
+                            onClick={() => setParkingBrakeOn(!parkingBrakeOn)}
+                        >
+                            <div className="button-icon">⚠</div>
+                        </button>
+                        <button className="circular-button neutral-color">
+                            <div className="button-icon">⏱</div>
+                        </button>
+                        <button className="circular-button warning-color">
+                            <div className="button-icon">⚡</div>
+                        </button>
+                    </div>
+                    <div className="emergency-button-large">
+                        <button 
+                            className="emergency-stop-large"
+                            onClick={handleEmergencyStop}
+                        ></button>
                     </div>
                 </div>
             </div>
@@ -284,33 +372,120 @@ const TrainCabin: React.FC = () => {
                 <div className="control-buttons-container">
                     <button 
                         className="control-button red-button"
-                        onClick={() => {
-                            handleSignalChange('red');
-                        }}
+                        onClick={() => handleSignalChange('red')}
                     >
                         RED SIGNAL
                     </button>
                     <button 
                         className="control-button yellow-button"
-                        onClick={() => {
-                            handleSignalChange('yellow');
-                        }}
+                        onClick={() => handleSignalChange('yellow')}
                     >
                         YELLOW SIGNAL
                     </button>
                     <button 
                         className="control-button green-button"
-                        onClick={() => {
-                            handleSignalChange('green');
-                        }}
+                        onClick={() => handleSignalChange('green')}
                     >
                         GREEN SIGNAL
                     </button>
+                </div>
+
+                {/* Speed Module */}
+                <div className="module-container wide-module">
+                    <div className="module-title">Speed Module</div>
+                    <div className="module-content speed-module">
+                        <div className="speed-slider-container">
+                            <div className="speed-slider">
+                                <div className="slider-track">
+                                    <div className="slider-handle" style={{ bottom: `${throttlePosition}%` }}></div>
+                                </div>
+                                <div className="slider-label">V</div>
+                            </div>
+                            <div className="speed-slider">
+                                <div className="slider-track">
+                                    <div className="slider-handle" style={{ bottom: `${throttlePosition * 0.8}%` }}></div>
+                                </div>
+                                <div className="slider-label">T</div>
+                            </div>
+                            <div className="speed-slider">
+                                <div className="slider-track brake-track">
+                                    <div className="slider-handle" style={{ bottom: `${brakePressure}%` }}></div>
+                                </div>
+                                <div className="slider-label">B</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Door and Controller Modules */}
+                <div className="modules-row">
+                    {/* Door Module */}
+                    <div className="module-container">
+                        <div className="module-title">Door Module</div>
+                        <div className="module-content">
+                            <button 
+                                className={`circular-button ${doorLocked ? 'warning-color' : 'success-color'}`}
+                                onClick={handleDoorToggle}
+                            >
+                                <div className="button-icon">
+                                    {doorLocked ? '🔒' : '🔓'}
+                                </div>
+                            </button>
+                            <button className="circular-button danger-color">
+                                <div className="button-icon">⚠</div>
+                            </button>
+                            <button className="circular-button neutral-color">
+                                <div className="button-icon">→</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Controller Module */}
+                    <ControllerModule 
+                        throttlePosition={throttlePosition}
+                        headlightsOn={headlightsOn}
+                        cabinLightsOn={cabinLightsOn}
+                        ventilationOn={ventilationOn}
+                        defrostOn={defrostOn}
+                        hornActive={hornActive}
+                        fanActive={fanActive}
+                        onToggleHeadlights={handleLightsToggle}
+                        onToggleCabinLights={() => setCabinLightsOn(!cabinLightsOn)}
+                        onToggleVentilation={() => setVentilationOn(!ventilationOn)}
+                        onToggleDefrost={() => setDefrostOn(!defrostOn)}
+                        onActivateHorn={handleHornActivate}
+                        onToggleFan={() => setFanActive(!fanActive)}
+                    />
                 </div>
             </div>
             
             {/* Right Panel - Controls */}
             <div className="right-panel">
+                {/* Direction Module */}
+                <div className="module-container">
+                    <div className="module-title">Direction Module</div>
+                    <div className="module-content direction-module">
+                        <button 
+                            className={`circular-button large-button ${reverserPosition === 'forward' ? 'active' : ''}`}
+                            onClick={() => handleDirectionChange('forward')}
+                        >
+                            <div className="button-icon">⬆️</div>
+                        </button>
+                        <button 
+                            className={`circular-button large-button ${reverserPosition === 'neutral' ? 'active' : ''}`}
+                            onClick={() => handleDirectionChange('neutral')}
+                        >
+                            <div className="button-icon">⏹️</div>
+                        </button>
+                        <button 
+                            className={`circular-button large-button ${reverserPosition === 'reverse' ? 'active' : ''}`}
+                            onClick={() => handleDirectionChange('reverse')}
+                        >
+                            <div className="button-icon">⬇️</div>
+                        </button>
+                    </div>
+                </div>
+
                 {/* Throttle Control */}
                 <div className="throttle-control">
                     <div className="throttle-label">THROTTLE</div>
@@ -335,6 +510,29 @@ const TrainCabin: React.FC = () => {
                 >
                     EMERGENCY STOP
                 </button>
+
+                {/* Startup Module */}
+                <div className="module-container">
+                    <div className="module-title">Startup Module</div>
+                    <div className="module-content">
+                        <button 
+                            className={`circular-button large-button ${engineStatus !== 'off' ? 'active' : ''}`}
+                            onClick={handleEngineToggle}
+                        >
+                            <div className="button-icon">⚡</div>
+                        </button>
+                        <div className="startup-controls">
+                            <div className="startup-indicator">
+                                <div className={`indicator-light ${engineStatus !== 'off' ? 'active' : ''}`}></div>
+                                <div className="indicator-label">1</div>
+                            </div>
+                            <div className="startup-indicator">
+                                <div className={`indicator-light ${engineStatus !== 'off' && throttlePosition > 0 ? 'active' : ''}`}></div>
+                                <div className="indicator-label">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
