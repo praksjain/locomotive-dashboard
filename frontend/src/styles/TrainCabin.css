@@ -8,6 +8,8 @@
     color: #ecf0f1;
     font-family: 'Arial', sans-serif;
     overflow: hidden;
+    position: relative;
+    transition: filter 0.5s ease;
 }
 
 /* Left Panel - Speedometer and Start/Stop */
@@ -762,4 +764,150 @@
 .indicator-label {
     font-size: 14px;
     color: #ecf0f1;
+}
+
+/* MCB Icon for Circular Buttons */
+.mcb-icon {
+    width: 30px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.mcb-icon-body {
+    width: 100%;
+    height: 100%;
+    background-color: #34495e;
+    border-radius: 5px;
+    border: 1px solid #456789;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.mcb-icon-body:before,
+.mcb-icon-body:after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: #ecf0f1;
+    border-radius: 50%;
+}
+
+.mcb-icon-body:before {
+    top: 5px;
+}
+
+.mcb-icon-body:after {
+    bottom: 5px;
+}
+
+.mcb-icon-lever {
+    width: 10px;
+    height: 50%;
+    background-color: #ecf0f1;
+    position: absolute;
+    top: 25%;
+    border-radius: 2px;
+}
+
+.circular-button:hover .mcb-icon-lever {
+    transform: rotate(180deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.circular-button:active .mcb-icon-lever {
+    transform: rotate(0deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Dashboard disabled state when engine is off */
+.locomotive-dashboard.engine-off .gauge-display,
+.locomotive-dashboard.engine-off .meter-visual,
+.locomotive-dashboard.engine-off .throttle-track,
+.locomotive-dashboard.engine-off .module-content,
+.locomotive-dashboard.engine-off .speed-slider-container,
+.locomotive-dashboard.engine-off .control-buttons-container {
+    opacity: 0.5;
+    filter: grayscale(70%);
+    pointer-events: none;
+}
+
+.locomotive-dashboard.engine-off .gauge-value,
+.locomotive-dashboard.engine-off .meter-value,
+.locomotive-dashboard.engine-off .throttle-value,
+.locomotive-dashboard.engine-off .speed-value {
+    color: #666;
+}
+
+.locomotive-dashboard.engine-off .gauge-needle {
+    opacity: 0.3;
+}
+
+.locomotive-dashboard.engine-off .signal-light.active {
+    box-shadow: none;
+}
+
+/* Keep these elements interactive even when engine is off */
+.locomotive-dashboard.engine-off .start-stop-container,
+.locomotive-dashboard.engine-off .emergency-button,
+.locomotive-dashboard.engine-off .module-container:last-child .module-content,
+.locomotive-dashboard.engine-off .right-panel .module-container:nth-last-child(1) .module-content {
+    opacity: 1;
+    filter: none;
+    pointer-events: auto;
+}
+
+/* Add a subtle overlay to indicate disabled state */
+.locomotive-dashboard.engine-off::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Keep the startup controls and emergency stop above the overlay */
+.locomotive-dashboard.engine-off .start-stop-container,
+.locomotive-dashboard.engine-off .emergency-button,
+.locomotive-dashboard.engine-off .module-container:last-child {
+    position: relative;
+    z-index: 2;
+}
+
+/* Dim the lights when engine is off */
+.locomotive-dashboard.engine-off .signal-light {
+    opacity: 0.1;
+}
+
+/* Add a "power off" indicator */
+.locomotive-dashboard.engine-off .speedometer::after {
+    content: 'ENGINE OFF';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #e74c3c;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+    letter-spacing: 2px;
+    z-index: 10;
+}
+
+/* Add transitions for elements that change when engine state changes */
+.gauge-display, .meter-visual, .throttle-track, .module-content, 
+.speed-slider-container, .control-buttons-container,
+.gauge-value, .meter-value, .throttle-value, .speed-value,
+.gauge-needle, .signal-light {
+    transition: opacity 0.5s ease, filter 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
 } 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/CentralUnitModule.css';
 
 interface CentralUnitModuleProps {
@@ -7,6 +7,31 @@ interface CentralUnitModuleProps {
 }
 
 const CentralUnitModule: React.FC<CentralUnitModuleProps> = ({ isOpen, onClose }) => {
+  // State to track which MCB switches are on
+  const [mcbStates, setMcbStates] = useState({
+    door1: false,
+    door2: false,
+    door3: false,
+    drive1: false,
+    drive2: false,
+    drive3: false,
+    drive4: false,
+    drv1: false,
+    drv2: false,
+    drv3: false,
+    drv4: false,
+    drv5: false,
+    mainPower: false
+  });
+
+  // Toggle MCB switch state
+  const toggleMcb = (id: keyof typeof mcbStates) => {
+    setMcbStates(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -25,14 +50,38 @@ const CentralUnitModule: React.FC<CentralUnitModuleProps> = ({ isOpen, onClose }
               <div className="panel-content">
                 <div className="panel-box">
                   <div className="panel-label">SMPS</div>
+                  <div className="mcb-container">
+                    <div 
+                      className={`mcb-switch ${mcbStates.door1 ? 'mcb-on' : 'mcb-off'}`}
+                      onClick={() => toggleMcb('door1')}
+                    >
+                      <div className="mcb-body">
+                        <div className="mcb-lever"></div>
+                        <div className="mcb-text">{mcbStates.door1 ? 'ON' : 'OFF'}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="panel-small-box">
                   <div className="panel-label">MAIN MCS</div>
-                  <div className="panel-switches">
-                    <div className="switch-group">
-                      <div className="switch"></div>
-                      <div className="switch"></div>
-                      <div className="switch"></div>
+                  <div className="mcb-container">
+                    <div className="mcb-group">
+                      <div 
+                        className={`mcb-switch small ${mcbStates.door2 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('door2')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                      <div 
+                        className={`mcb-switch small ${mcbStates.door3 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('door3')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -44,19 +93,56 @@ const CentralUnitModule: React.FC<CentralUnitModuleProps> = ({ isOpen, onClose }
               <div className="panel-content">
                 <div className="drive-grid">
                   <div className="drive-row">
-                    <div className="drive-cell">DRV1</div>
-                    <div className="drive-cell">DRV2</div>
-                    <div className="drive-cell">DRV3</div>
-                    <div className="drive-cell">DRV4</div>
+                    <div className="drive-cell">
+                      <div className="panel-label">DRV1</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drive1 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drive1')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                          <div className="mcb-text">{mcbStates.drive1 ? 'ON' : 'OFF'}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="drive-cell">
+                      <div className="panel-label">DRV2</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drive2 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drive2')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                          <div className="mcb-text">{mcbStates.drive2 ? 'ON' : 'OFF'}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="drive-switches">
-                    {/* Rows of switches */}
-                    <div className="switch-row"></div>
-                    <div className="switch-row"></div>
-                  </div>
-                  <div className="drive-controls">
-                    {/* Control elements */}
-                    <div className="control-row"></div>
+                  <div className="drive-row">
+                    <div className="drive-cell">
+                      <div className="panel-label">DRV3</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drive3 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drive3')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                          <div className="mcb-text">{mcbStates.drive3 ? 'ON' : 'OFF'}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="drive-cell">
+                      <div className="panel-label">DRV4</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drive4 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drive4')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                          <div className="mcb-text">{mcbStates.drive4 ? 'ON' : 'OFF'}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -67,19 +153,84 @@ const CentralUnitModule: React.FC<CentralUnitModuleProps> = ({ isOpen, onClose }
               <div className="panel-content">
                 <div className="drv-grid">
                   <div className="drv-row">
-                    <div className="drv-cell">DRV1</div>
-                    <div className="drv-cell">DRV2</div>
-                    <div className="drv-cell">DRV3</div>
-                    <div className="drv-cell">DRV4</div>
+                    <div className="drv-cell">
+                      <div className="panel-label">DRV1</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drv1 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drv1')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="drv-cell">
+                      <div className="panel-label">DRV2</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drv2 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drv2')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="drv-row">
+                    <div className="drv-cell">
+                      <div className="panel-label">DRV3</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drv3 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drv3')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="drv-cell">
+                      <div className="panel-label">DRV4</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drv4 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drv4')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="separator"></div>
                   <div className="drv-row">
-                    <div className="drv-cell">DRV5</div>
+                    <div className="drv-cell">
+                      <div className="panel-label">DRV5</div>
+                      <div 
+                        className={`mcb-switch ${mcbStates.drv5 ? 'mcb-on' : 'mcb-off'}`}
+                        onClick={() => toggleMcb('drv5')}
+                      >
+                        <div className="mcb-body">
+                          <div className="mcb-lever"></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="separator"></div>
-                  <div className="drv-switches">
-                    {/* Rows of switches */}
-                    <div className="switch-row"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Power Switch Panel */}
+            <div className="panel-item power-switch-panel">
+              <div className="panel-title">POWER SWITCH</div>
+              <div className="panel-content">
+                <div className="power-switch-container">
+                  <div 
+                    className={`mcb-switch large ${mcbStates.mainPower ? 'mcb-on' : 'mcb-off'}`}
+                    onClick={() => toggleMcb('mainPower')}
+                  >
+                    <div className="mcb-body">
+                      <div className="mcb-lever"></div>
+                      <div className="mcb-text">{mcbStates.mainPower ? 'ON' : 'OFF'}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -124,22 +275,6 @@ const CentralUnitModule: React.FC<CentralUnitModuleProps> = ({ isOpen, onClose }
                   <div className="control-display"></div>
                   <div className="control-switches">
                     <div className="switch-row"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Power Switch Panel */}
-            <div className="panel-item power-switch-panel">
-              <div className="panel-title">POWER SWITCH</div>
-              <div className="panel-content">
-                <div className="power-switch-container">
-                  <div className="power-switch">
-                    <div className="power-switch-icon">
-                      <div className="power-switch-body">
-                        <div className="power-switch-text">OFF</div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

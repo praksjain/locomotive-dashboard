@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import CompressorButton from './CompressorButton';
 import '../styles/ControllerModule.css';
+import '../styles/CompressorButton.css';
 
 interface ControllerModuleProps {
     throttlePosition: number;
@@ -44,65 +46,76 @@ const ControllerModule: React.FC<ControllerModuleProps> = ({
         }
     };
 
+    // Icons for each button
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'cabin':
+                return '💡';
+            case 'vent':
+                return '🌀';
+            case 'lights':
+                return '🔦';
+            case 'horn':
+                return '📢';
+            case 'defrost':
+                return '❄️';
+            case 'fan':
+                return '🌬️';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div className="module-container">
             <div className="module-title">CONTROLLER MODULE</div>
             <div className="module-content controller-module">
                 <div className="controller-row">
-                    <button 
-                        className={`controller-button dark-button ${cabinLightsOn ? 'active' : ''}`}
+                    <CompressorButton 
+                        label="CABIN"
+                        icon={getIcon('cabin')}
+                        isActive={cabinLightsOn}
                         onClick={onToggleCabinLights}
-                    >
-                        <span className="button-text">CABIN</span>
-                    </button>
-                    <button 
-                        className={`controller-button light-button ${ventilationOn ? 'active' : ''}`}
+                    />
+                    <CompressorButton 
+                        label="VENT"
+                        icon={getIcon('vent')}
+                        isActive={ventilationOn}
                         onClick={onToggleVentilation}
-                    >
-                        <span className="button-text">VENT</span>
-                    </button>
+                    />
                 </div>
                 <div className="controller-row">
                     <div className="controller-labels">
                         <div className="controller-label">{throttlePosition > 0 ? throttlePosition : 0}</div>
                     </div>
-                    <button 
-                        className={`controller-button light-button ${headlightsOn ? 'active' : ''}`}
+                    <CompressorButton 
+                        label="LIGHTS"
+                        icon={getIcon('lights')}
+                        isActive={headlightsOn}
                         onClick={onToggleHeadlights}
-                    >
-                        <span className="button-text">LIGHTS</span>
-                    </button>
+                    />
                 </div>
                 <div className="controller-row">
-                    <button 
-                        className={`controller-button light-button ${hornActive ? 'active' : ''}`}
+                    <CompressorButton 
+                        label="HORN"
+                        icon={getIcon('horn')}
+                        isActive={hornActive}
                         onClick={onActivateHorn}
-                    >
-                        <span className="button-text">HORN</span>
-                    </button>
-                    <button 
-                        className={`controller-button light-button ${defrostOn ? 'active' : ''}`}
+                    />
+                    <CompressorButton 
+                        label="DEFROST"
+                        icon={getIcon('defrost')}
+                        isActive={defrostOn}
                         onClick={onToggleDefrost}
-                    >
-                        <span className="button-text">DEFROST</span>
-                    </button>
+                    />
                 </div>
                 <div className="controller-row">
-                    <button 
-                        className={`controller-button light-button ${fanActive ? 'active' : ''}`}
+                    <CompressorButton 
+                        label="FAN"
+                        icon={getIcon('fan')}
+                        isActive={fanActive}
                         onClick={handleFanToggle}
-                    >
-                        <div className="fan-container">
-                            <div className={`fan ${fanActive ? 'spinning' : ''}`}>
-                                <div className="fan-blade blade-1"></div>
-                                <div className="fan-blade blade-2"></div>
-                                <div className="fan-blade blade-3"></div>
-                                <div className="fan-blade blade-4"></div>
-                                <div className="fan-center"></div>
-                            </div>
-                        </div>
-                        <span className="button-text">FAN</span>
-                    </button>
+                    />
                 </div>
             </div>
         </div>

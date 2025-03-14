@@ -6,9 +6,11 @@ import { EnhancedSoundService } from '../services/EnhancedSoundService';
 import { updateSimulation } from '../store/simulationSlice';
 import ControllerModule from './ControllerModule';
 import CentralUnitModule from './CentralUnitModule';
+import CompressorButton from './CompressorButton';
 import '../styles/TrainCabin.css';
 import '../styles/ControllerModule.css';
 import '../styles/CentralUnitModule.css';
+import '../styles/CompressorButton.css';
 
 const TrainCabin: React.FC = () => {
     const dispatch = useDispatch();
@@ -226,7 +228,7 @@ const TrainCabin: React.FC = () => {
     }, [hornActive]);
 
     return (
-        <div className="locomotive-dashboard">
+        <div className={`locomotive-dashboard ${engineStatus === 'off' ? 'engine-off' : ''}`}>
             {/* Left Panel - Speedometer and Start/Stop */}
             <div className="left-panel">
                 {/* Speedometer */}
@@ -290,18 +292,24 @@ const TrainCabin: React.FC = () => {
                 <div className="module-container">
                     <div className="module-title">Train Protection Module</div>
                     <div className="module-content">
-                        <button 
-                            className={`circular-button emergency-color ${parkingBrakeOn ? 'active' : ''}`}
+                        <CompressorButton 
+                            label="BRAKE"
+                            icon="⚠"
+                            isActive={parkingBrakeOn}
                             onClick={() => setParkingBrakeOn(!parkingBrakeOn)}
-                        >
-                            <div className="button-icon">⚠</div>
-                        </button>
-                        <button className="circular-button neutral-color">
-                            <div className="button-icon">⏱</div>
-                        </button>
-                        <button className="circular-button warning-color">
-                            <div className="button-icon">⚡</div>
-                        </button>
+                        />
+                        <CompressorButton 
+                            label="TIMER"
+                            icon="⏱"
+                            isActive={false}
+                            onClick={() => {}}
+                        />
+                        <CompressorButton 
+                            label="POWER"
+                            icon="⚡"
+                            isActive={false}
+                            onClick={() => {}}
+                        />
                     </div>
                     <div className="emergency-button-large">
                         <button 
@@ -315,18 +323,24 @@ const TrainCabin: React.FC = () => {
                 <div className="module-container">
                     <div className="module-title">Central Unit Module</div>
                     <div className="module-content">
-                        <button 
-                            className="circular-button neutral-color"
+                        <CompressorButton 
+                            label="PANEL"
+                            icon="🔌"
+                            isActive={centralUnitOpen}
                             onClick={() => setCentralUnitOpen(true)}
-                        >
-                            <div className="button-icon">🔌</div>
-                        </button>
-                        <button className="circular-button neutral-color">
-                            <div className="button-icon">⚙️</div>
-                        </button>
-                        <button className="circular-button neutral-color">
-                            <div className="button-icon">📊</div>
-                        </button>
+                        />
+                        <CompressorButton 
+                            label="CONFIG"
+                            icon="⚙️"
+                            isActive={false}
+                            onClick={() => {}}
+                        />
+                        <CompressorButton 
+                            label="STATS"
+                            icon="📊"
+                            isActive={false}
+                            onClick={() => {}}
+                        />
                     </div>
                 </div>
             </div>
@@ -445,20 +459,24 @@ const TrainCabin: React.FC = () => {
                     <div className="module-container">
                         <div className="module-title">Door Module</div>
                         <div className="module-content">
-                            <button 
-                                className={`circular-button ${doorLocked ? 'warning-color' : 'success-color'}`}
+                            <CompressorButton 
+                                label={doorLocked ? "LOCKED" : "UNLOCKED"}
+                                icon={doorLocked ? "🔒" : "🔓"}
+                                isActive={!doorLocked}
                                 onClick={handleDoorToggle}
-                            >
-                                <div className="button-icon">
-                                    {doorLocked ? '🔒' : '🔓'}
-                                </div>
-                            </button>
-                            <button className="circular-button danger-color">
-                                <div className="button-icon">⚠</div>
-                            </button>
-                            <button className="circular-button neutral-color">
-                                <div className="button-icon">→</div>
-                            </button>
+                            />
+                            <CompressorButton 
+                                label="WARNING"
+                                icon="⚠"
+                                isActive={false}
+                                onClick={() => {}}
+                            />
+                            <CompressorButton 
+                                label="OPEN"
+                                icon="🚪"
+                                isActive={false}
+                                onClick={() => {}}
+                            />
                         </div>
                     </div>
 
@@ -487,24 +505,24 @@ const TrainCabin: React.FC = () => {
                 <div className="module-container">
                     <div className="module-title">Direction Module</div>
                     <div className="module-content direction-module">
-                        <button 
-                            className={`circular-button large-button ${reverserPosition === 'forward' ? 'active' : ''}`}
+                        <CompressorButton 
+                            label="FORWARD"
+                            icon="⬆️"
+                            isActive={reverserPosition === 'forward'}
                             onClick={() => handleDirectionChange('forward')}
-                        >
-                            <div className="button-icon">⬆️</div>
-                        </button>
-                        <button 
-                            className={`circular-button large-button ${reverserPosition === 'neutral' ? 'active' : ''}`}
+                        />
+                        <CompressorButton 
+                            label="NEUTRAL"
+                            icon="⏹️"
+                            isActive={reverserPosition === 'neutral'}
                             onClick={() => handleDirectionChange('neutral')}
-                        >
-                            <div className="button-icon">⏹️</div>
-                        </button>
-                        <button 
-                            className={`circular-button large-button ${reverserPosition === 'reverse' ? 'active' : ''}`}
+                        />
+                        <CompressorButton 
+                            label="REVERSE"
+                            icon="⬇️"
+                            isActive={reverserPosition === 'reverse'}
                             onClick={() => handleDirectionChange('reverse')}
-                        >
-                            <div className="button-icon">⬇️</div>
-                        </button>
+                        />
                     </div>
                 </div>
 
@@ -537,12 +555,12 @@ const TrainCabin: React.FC = () => {
                 <div className="module-container">
                     <div className="module-title">Startup Module</div>
                     <div className="module-content">
-                        <button 
-                            className={`circular-button large-button ${engineStatus !== 'off' ? 'active' : ''}`}
+                        <CompressorButton 
+                            label="POWER"
+                            icon="⚡"
+                            isActive={engineStatus !== 'off'}
                             onClick={handleEngineToggle}
-                        >
-                            <div className="button-icon">⚡</div>
-                        </button>
+                        />
                         <div className="startup-controls">
                             <div className="startup-indicator">
                                 <div className={`indicator-light ${engineStatus !== 'off' ? 'active' : ''}`}></div>
