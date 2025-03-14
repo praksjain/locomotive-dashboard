@@ -3,11 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { WebSocketService } from '../services/WebSocketService';
 import { EnhancedSoundService } from '../services/EnhancedSoundService';
+import { updateSimulation } from '../store/simulationSlice';
 import '../styles/TrainCabin.css';
 
 const TrainCabin: React.FC = () => {
     const dispatch = useDispatch();
-    const { engineStatus, throttlePosition, speed, brakePressure, fuelLevel, engineTemp, oilPressure, cabinTemp, fanSpeed } = 
+    const { engineStatus, throttlePosition, speed, brakePressure, fuelLevel, engineTemp, oilPressure, cabinTemp, fanSpeed, signal } = 
         useSelector((state: RootState) => state.simulation);
     const wsRef = useRef<WebSocketService>();
     const [isDragging, setIsDragging] = useState(false);
@@ -137,6 +138,27 @@ const TrainCabin: React.FC = () => {
         });
     };
 
+    const handleSignalChange = (newSignal: string) => {
+        console.log(`Changing signal to: ${newSignal}`);
+        
+        // Send update to backend - the WebSocketService will update Redux
+        wsRef.current?.sendUpdate({ signal: newSignal });
+        
+        // Force update the local state for immediate UI feedback
+        document.getElementById('red-signal-light')?.classList.remove('active');
+        document.getElementById('yellow-signal-light')?.classList.remove('active');
+        document.getElementById('green-signal-light')?.classList.remove('active');
+        
+        // Activate the selected signal light
+        document.getElementById(`${newSignal}-signal-light`)?.classList.add('active');
+        
+        // Update the signal value text
+        const signalValueElement = document.querySelector('.signal-value');
+        if (signalValueElement) {
+            signalValueElement.textContent = newSignal.toUpperCase();
+        }
+    };
+
     return (
         <div className="locomotive-dashboard">
             {/* Left Panel - Speedometer and Start/Stop */}
@@ -234,6 +256,56 @@ const TrainCabin: React.FC = () => {
                             <div className="gauge-value">{throttlePosition}%</div>
                         </div>
                     </div>
+                    
+                    {/* Signal Box */}
+                    <div className="gauge signal-box">
+                        <div className="gauge-title">SIGNAL STATUS</div>
+                        <div className="gauge-display signal-display">
+                            <div className="signal-lights">
+                                <div 
+                                    className={`signal-light red ${signal === 'red' ? 'active' : ''}`}
+                                    id="red-signal-light"
+                                ></div>
+                                <div 
+                                    className={`signal-light yellow ${signal === 'yellow' ? 'active' : ''}`}
+                                    id="yellow-signal-light"
+                                ></div>
+                                <div 
+                                    className={`signal-light green ${signal === 'green' ? 'active' : ''}`}
+                                    id="green-signal-light"
+                                ></div>
+                            </div>
+                            <div className="gauge-value signal-value">{signal ? signal.toUpperCase() : 'UNKNOWN'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Signal Control Buttons */}
+                <div className="control-buttons-container">
+                    <button 
+                        className="control-button red-button"
+                        onClick={() => {
+                            handleSignalChange('red');
+                        }}
+                    >
+                        RED SIGNAL
+                    </button>
+                    <button 
+                        className="control-button yellow-button"
+                        onClick={() => {
+                            handleSignalChange('yellow');
+                        }}
+                    >
+                        YELLOW SIGNAL
+                    </button>
+                    <button 
+                        className="control-button green-button"
+                        onClick={() => {
+                            handleSignalChange('green');
+                        }}
+                    >
+                        GREEN SIGNAL
+                    </button>
                 </div>
             </div>
             

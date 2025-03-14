@@ -75,6 +75,14 @@ export class WebSocketService {
     }
 
     try {
+      // Special handling for signal updates
+      if (data.signal) {
+        console.log(`Sending signal update: ${data.signal}`);
+        
+        // For signal updates, directly update the Redux store
+        this.dispatch(updateSimulation({ signal: data.signal }));
+      }
+      
       // Convert camelCase to snake_case for backend
       const convertedData = Object.entries(data).reduce((acc, [key, value]) => {
         const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);

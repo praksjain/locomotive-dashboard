@@ -36,27 +36,44 @@ class ConnectionManager:
         await websocket.send_json({
             "speed": self.simulation.speed,
             "signal": self.simulation.signal,
-            "engine_status": self.simulation.engine_status,
-            "throttle_position": self.simulation.throttle_position,
-            "brake_pressure": self.simulation.brake_pressure,
-            "fuel_level": self.simulation.fuel_level
+            "engineStatus": self.simulation.engine_status,
+            "throttlePosition": self.simulation.throttle_position,
+            "brakePressure": self.simulation.brake_pressure,
+            "fuelLevel": self.simulation.fuel_level
         })
     
     async def update_simulation(self, data: Dict):
+        print(f"Received update data: {data}")
+        
+        # Handle signal updates first and explicitly
+        if "signal" in data:
+            new_signal = data["signal"]
+            print(f"Signal update detected: {new_signal}")
+            self.simulation.signal = new_signal
+            
+        # Handle other updates
         if "speed" in data:
             self.simulation.speed = data["speed"]
         if "throttle_position" in data:
             self.simulation.throttle_position = data["throttle_position"]
         if "engine_status" in data:
             self.simulation.engine_status = data["engine_status"]
-        await self.broadcast({
+        
+        # Prepare response with updated state
+        response = {
             "speed": self.simulation.speed,
             "signal": self.simulation.signal,
-            "engine_status": self.simulation.engine_status,
-            "throttle_position": self.simulation.throttle_position,
-            "brake_pressure": self.simulation.brake_pressure,
-            "fuel_level": self.simulation.fuel_level
-        })
+            "engineStatus": self.simulation.engine_status,
+            "throttlePosition": self.simulation.throttle_position,
+            "brakePressure": self.simulation.brake_pressure,
+            "fuelLevel": self.simulation.fuel_level
+        }
+        
+        print(f"Updated signal value: {self.simulation.signal}")
+        print(f"Broadcasting response: {response}")
+        
+        # Broadcast to all clients
+        await self.broadcast(response)
 
 manager = ConnectionManager()
 
