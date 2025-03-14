@@ -36,7 +36,7 @@ const TrainCabin: React.FC = () => {
     const [couplerEngaged, setCouplerEngaged] = useState(false);
     const [auxiliaryPowerOn, setAuxiliaryPowerOn] = useState(false);
     const [brakeLightOn, setBrakeLightOn] = useState(false);
-    const [cabinLightsOn, setCabinLightsOn] = useState(true);
+    const [cabinLightsOn, setCabinLightsOn] = useState(false);
     const [ventilationOn, setVentilationOn] = useState(false);
     const [defrostOn, setDefrostOn] = useState(false);
     const [batteryIsolated, setBatteryIsolated] = useState(false);
@@ -74,30 +74,40 @@ const TrainCabin: React.FC = () => {
         return () => clearTimeout(timer);
     }, [speed]);
 
-    const handleEngineToggle = () => {
-        if (!wsRef.current) return;
+    const toggleEngine = () => {
+        const newStatus = engineStatus === 'off' ? 'on' : 'off';
+        console.log(`Engine toggled to: ${newStatus}`);
         
-        if (engineStatus === 'off') {
-            // Starting sequence
-            setEngineStarting(true);
-            wsRef.current.sendUpdate({ engine_status: 'starting' });
-            
-            // Simulate engine startup sequence
-            setTimeout(() => {
-                wsRef.current?.sendUpdate({
-                    engine_status: 'on',
-                    throttle_position: 0,
-                    brake_pressure: 100
-                });
-                setEngineStarting(false);
-            }, 3000);
-        } else {
-            // Immediate shutdown
-            wsRef.current.sendUpdate({
-                engine_status: 'off',
-                throttle_position: 0,
-                brake_pressure: 100
+        // Add sound effect
+        try {
+            const sound = newStatus === 'on' ? 
+                new Audio('/sounds/engine-start.mp3') : 
+                new Audio('/sounds/engine-stop.mp3');
+            sound.volume = 0.5;
+            sound.play().catch(e => console.log('Audio play failed:', e));
+        } catch (e) {
+            console.log('Audio creation failed:', e);
+        }
+        
+        // Dispatch to Redux store
+        dispatch(updateSimulation({ 
+            engineStatus: newStatus,
+            throttlePosition: newStatus === 'off' ? 0 : throttlePosition
+        }));
+        
+        // Also update WebSocket if available
+        if (wsRef.current) {
+            console.log('Sending engine status update via WebSocket');
+            wsRef.current.sendUpdate({ 
+                engine_status: newStatus,
+                throttle_position: newStatus === 'off' ? 0 : throttlePosition
             });
+        } else {
+            console.warn('WebSocket not available for engine toggle');
+        }
+        
+        if (newStatus === 'off') {
+            console.log('Throttle reset to 0');
         }
     };
 
@@ -105,27 +115,70 @@ const TrainCabin: React.FC = () => {
         if (!throttleRef.current || engineStatus === 'off') return;
         
         const rect = throttleRef.current.getBoundingClientRect();
-        const height = rect.height - 50; // Adjust for handle height
+        const height = rect.height - 25; // Adjust for handle height
         const relativeY = Math.max(0, Math.min(height, clientY - rect.top));
         const percentage = Math.round(((height - relativeY) / height) * 100);
         
+        // Get the throttle handle and fill elements
+        const throttleHandle = document.querySelector('.throttle-handle') as HTMLElement;
+        const throttleFill = document.querySelector('.throttle-fill') as HTMLElement;
+        
+        if (throttleHandle && throttleFill) {
+            // Apply smooth transitions
+            throttleHandle.style.transition = 'bottom 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            throttleFill.style.transition = 'height 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            // Update visual elements immediately for responsive feel
+            throttleHandle.style.bottom = `calc(${percentage}% - 12px)`;
+            throttleFill.style.height = `${percentage}%`;
+        }
+        
+        // Update Redux store
+        dispatch(updateSimulation({ throttlePosition: percentage }));
+        
+        // Send update to WebSocket
         wsRef.current?.sendUpdate({ throttle_position: percentage });
-    }, [engineStatus]);
+        
+        console.log(`Throttle position: ${percentage}%`);
+    }, [engineStatus, dispatch]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        if (engineStatus === 'off') return;
+        if (engineStatus === 'off') {
+            console.log('Cannot adjust throttle while engine is off');
+            return;
+        }
         setIsDragging(true);
         handleThrottleMove(e.clientY);
+        
+        // Add throttle sound effect
+        try {
+            const sound = new Audio('/sounds/throttle-click.mp3');
+            sound.volume = 0.2;
+            sound.play().catch(e => console.log('Audio play failed:', e));
+        } catch (e) {
+            console.log('Audio creation failed:', e);
+        }
     };
 
-    const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const handleMouseMove = useCallback((e: MouseEvent) => {
         if (!isDragging) return;
         handleThrottleMove(e.clientY);
     }, [isDragging, handleThrottleMove]);
 
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
+    const handleMouseUp = useCallback(() => {
+        if (isDragging) {
+            setIsDragging(false);
+            
+            // Add throttle release sound effect
+            try {
+                const sound = new Audio('/sounds/throttle-release.mp3');
+                sound.volume = 0.2;
+                sound.play().catch(e => console.log('Audio play failed:', e));
+            } catch (e) {
+                console.log('Audio creation failed:', e);
+            }
+        }
+    }, [isDragging]);
 
     useEffect(() => {
         if (isDragging) {
@@ -178,32 +231,67 @@ const TrainCabin: React.FC = () => {
     };
 
     const handleDoorToggle = () => {
-        setDoorLocked(!doorLocked);
+        const newDoorState = !doorLocked;
+        dispatch(updateSimulation({ doorsLocked: newDoorState }));
+        wsRef.current?.sendUpdate({ doors_locked: newDoorState });
+        console.log(`Door ${doorLocked ? 'unlocked' : 'locked'}`);
     };
 
     const handleLightsToggle = () => {
         const newState = !headlightsOn;
-        setHeadlightsOn(newState);
+        dispatch(updateSimulation({ headlights: newState }));
+        wsRef.current?.sendUpdate({ headlights: newState });
         console.log(`Toggling headlights to: ${newState ? 'ON' : 'OFF'}`);
-        // You can add WebSocket update here if needed
-        // wsRef.current?.sendUpdate({ headlights: newState });
     };
 
     const handleHornActivate = () => {
-        setHornActive(true);
+        dispatch(updateSimulation({ horn: true }));
+        wsRef.current?.sendUpdate({ horn: true });
         console.log('Horn activated');
-        // You can add WebSocket update here if needed
-        // wsRef.current?.sendUpdate({ horn: true });
         
         setTimeout(() => {
-            setHornActive(false);
+            dispatch(updateSimulation({ horn: false }));
+            wsRef.current?.sendUpdate({ horn: false });
             console.log('Horn deactivated');
-            // wsRef.current?.sendUpdate({ horn: false });
         }, 1000);
     };
 
     const handleDirectionChange = (direction: string) => {
+        if (engineStatus === 'off') {
+            console.log('Cannot change direction while engine is off');
+            return;
+        }
         setReverserPosition(direction);
+        wsRef.current?.sendUpdate({ reverser_position: direction });
+        console.log(`Direction changed to: ${direction}`);
+    };
+
+    const handleCabinLightsToggle = () => {
+        const newState = !cabinLightsOn;
+        dispatch(updateSimulation({ cabinLights: newState }));
+        wsRef.current?.sendUpdate({ cabin_lights: newState });
+        console.log(`Cabin lights ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleVentilationToggle = () => {
+        const newState = !ventilationOn;
+        setVentilationOn(newState);
+        wsRef.current?.sendUpdate({ ventilation: newState });
+        console.log(`Ventilation ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleDefrostToggle = () => {
+        const newState = !defrostOn;
+        setDefrostOn(newState);
+        wsRef.current?.sendUpdate({ defrost: newState });
+        console.log(`Defrost ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleFanToggle = () => {
+        const newState = !fanActive;
+        setFanActive(newState);
+        wsRef.current?.sendUpdate({ fan: newState });
+        console.log(`Fan ${newState ? 'ON' : 'OFF'}`);
     };
 
     // Add useEffect hooks to log state changes for debugging
@@ -229,346 +317,271 @@ const TrainCabin: React.FC = () => {
 
     return (
         <div className={`locomotive-dashboard ${engineStatus === 'off' ? 'engine-off' : ''}`}>
-            {/* Left Panel - Speedometer and Start/Stop */}
-            <div className="left-panel">
-                {/* Speedometer */}
-                <div className="speedometer">
-                    <div className="speed-value">{speed.toFixed(1)}</div>
-                    <div className="speed-unit">km/h</div>
-                </div>
-                
-                {/* Start/Stop Button */}
-                <div className="start-stop-container">
-                    <button 
-                        className={`start-stop-button ${engineStatus !== 'off' ? 'active' : ''}`}
-                        onClick={handleEngineToggle}
-                        disabled={engineStarting}
-                    >
-                        {engineStatus === 'off' ? 'START ENGINE' : 
-                         engineStarting ? 'STARTING...' : 'STOP ENGINE'}
-                    </button>
-                </div>
-
-                {/* Additional Meters */}
-                <div className="left-panel-meters">
-                    {/* Power Output Meter */}
-                    <div className="meter-container">
-                        <div className="meter-label">POWER OUTPUT</div>
-                        <div className="meter-visual">
-                            <div 
-                                className="meter-fill" 
-                                style={{ width: `${throttlePosition}%` }}
-                            ></div>
-                        </div>
-                        <div className="meter-value">{throttlePosition}%</div>
-                    </div>
-
-                    {/* Traction Meter */}
-                    <div className="meter-container">
-                        <div className="meter-label">TRACTION</div>
-                        <div className="meter-visual">
-                            <div 
-                                className="meter-fill traction-fill" 
-                                style={{ width: `${Math.min(100, speed * 2)}%` }}
-                            ></div>
-                        </div>
-                        <div className="meter-value">{Math.min(100, Math.round(speed * 2))}%</div>
-                    </div>
-
-                    {/* Brake Pressure Meter */}
-                    <div className="meter-container">
-                        <div className="meter-label">BRAKE PRESSURE</div>
-                        <div className="meter-visual">
-                            <div 
-                                className="meter-fill brake-fill" 
-                                style={{ width: `${brakePressure}%` }}
-                            ></div>
-                        </div>
-                        <div className="meter-value">{brakePressure}%</div>
-                    </div>
-                </div>
-
-                {/* Train Protection Module */}
-                <div className="module-container">
-                    <div className="module-title">Train Protection Module</div>
-                    <div className="module-content">
-                        <CompressorButton 
-                            label="BRAKE"
-                            icon="⚠"
-                            isActive={parkingBrakeOn}
-                            onClick={() => setParkingBrakeOn(!parkingBrakeOn)}
-                        />
-                        <CompressorButton 
-                            label="TIMER"
-                            icon="⏱"
-                            isActive={false}
-                            onClick={() => {}}
-                        />
-                        <CompressorButton 
-                            label="POWER"
-                            icon="⚡"
-                            isActive={false}
-                            onClick={() => {}}
-                        />
-                    </div>
-                    <div className="emergency-button-large">
-                        <button 
-                            className="emergency-stop-large"
-                            onClick={handleEmergencyStop}
-                        ></button>
-                    </div>
-                </div>
-
-                {/* Central Unit Module */}
-                <div className="module-container">
-                    <div className="module-title">Central Unit Module</div>
-                    <div className="module-content">
-                        <CompressorButton 
-                            label="PANEL"
-                            icon="🔌"
-                            isActive={centralUnitOpen}
-                            onClick={() => setCentralUnitOpen(true)}
-                        />
-                        <CompressorButton 
-                            label="CONFIG"
-                            icon="⚙️"
-                            isActive={false}
-                            onClick={() => {}}
-                        />
-                        <CompressorButton 
-                            label="STATS"
-                            icon="📊"
-                            isActive={false}
-                            onClick={() => {}}
-                        />
-                    </div>
-                </div>
+            {/* Windshield View */}
+            <div className="windshield-view">
+                <div className="track"></div>
+                <div className="platform"></div>
+                <div className="platform platform-right"></div>
+                <div className="yellow-line"></div>
+                <div className="yellow-line yellow-line-right"></div>
+                <div className="windshield-frame"></div>
             </div>
             
-            {/* Center Panel - Main Gauges */}
-            <div className="center-panel">
-                <div className="gauge-container">
-                    {/* Acceleration Gauge */}
-                    <div className="gauge acceleration-gauge">
-                        <div className="gauge-title">ACCELERATION</div>
-                        <div className="gauge-display">
-                            <div className="gauge-needle" style={{ 
-                                transform: `rotate(${Math.min(Math.max((speed - prevSpeed) * 10, -90), 90)}deg)` 
-                            }}></div>
-                            <div className="gauge-value">{(speed - prevSpeed).toFixed(1)} m/s²</div>
+            {/* Control Panel */}
+            <div className="control-panel">
+                {/* Left Controls */}
+                <div className="left-controls">
+                    {/* Speedometer */}
+                    <div className="circular-gauge">
+                        <div className="gauge-inner">
+                            <div className="gauge-title">SPEED</div>
+                            <div className="gauge-value">{speed.toFixed(1)}</div>
+                            <div className="gauge-unit">km/h</div>
                         </div>
                     </div>
                     
-                    {/* Locomotive Speed Gauge */}
-                    <div className="gauge speed-gauge">
-                        <div className="gauge-title">LOCOMOTIVE SPEED</div>
-                        <div className="gauge-display">
-                            <div className="gauge-needle" style={{ 
-                                transform: `rotate(${(speed / 200) * 180 - 90}deg)` 
-                            }}></div>
-                            <div className="gauge-value">{speed.toFixed(1)} km/h</div>
-                        </div>
-                    </div>
-                    
-                    {/* Power Efficiency Gauge */}
-                    <div className="gauge efficiency-gauge">
-                        <div className="gauge-title">POWER EFFICIENCY</div>
-                        <div className="gauge-display">
-                            <div className="gauge-needle" style={{ 
-                                transform: `rotate(${Math.min(90, Math.max(-90, (throttlePosition - 50) * 1.8))}deg)` 
-                            }}></div>
-                            <div className="gauge-value">{throttlePosition}%</div>
-                        </div>
-                    </div>
-                    
-                    {/* Signal Box */}
-                    <div className="gauge signal-box">
-                        <div className="gauge-title">SIGNAL STATUS</div>
-                        <div className="gauge-display signal-display">
-                            <div className="signal-lights">
-                                <div 
-                                    className={`signal-light red ${signal === 'red' ? 'active' : ''}`}
-                                    id="red-signal-light"
-                                ></div>
-                                <div 
-                                    className={`signal-light yellow ${signal === 'yellow' ? 'active' : ''}`}
-                                    id="yellow-signal-light"
-                                ></div>
-                                <div 
-                                    className={`signal-light green ${signal === 'green' ? 'active' : ''}`}
-                                    id="green-signal-light"
-                                ></div>
-                            </div>
-                            <div className="gauge-value signal-value">{signal ? signal.toUpperCase() : 'UNKNOWN'}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Signal Control Buttons */}
-                <div className="control-buttons-container">
-                    <button 
-                        className="control-button red-button"
-                        onClick={() => handleSignalChange('red')}
-                    >
-                        RED SIGNAL
-                    </button>
-                    <button 
-                        className="control-button yellow-button"
-                        onClick={() => handleSignalChange('yellow')}
-                    >
-                        YELLOW SIGNAL
-                    </button>
-                    <button 
-                        className="control-button green-button"
-                        onClick={() => handleSignalChange('green')}
-                    >
-                        GREEN SIGNAL
-                    </button>
-                </div>
-
-                {/* Speed Module */}
-                <div className="module-container wide-module">
-                    <div className="module-title">Speed Module</div>
-                    <div className="module-content speed-module">
-                        <div className="speed-slider-container">
-                            <div className="speed-slider">
-                                <div className="slider-track">
-                                    <div className="slider-handle" style={{ bottom: `${throttlePosition}%` }}></div>
-                                </div>
-                                <div className="slider-label">V</div>
-                            </div>
-                            <div className="speed-slider">
-                                <div className="slider-track">
-                                    <div className="slider-handle" style={{ bottom: `${throttlePosition * 0.8}%` }}></div>
-                                </div>
-                                <div className="slider-label">T</div>
-                            </div>
-                            <div className="speed-slider">
-                                <div className="slider-track brake-track">
-                                    <div className="slider-handle" style={{ bottom: `${brakePressure}%` }}></div>
-                                </div>
-                                <div className="slider-label">B</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Door and Controller Modules */}
-                <div className="modules-row">
-                    {/* Door Module */}
-                    <div className="module-container">
-                        <div className="module-title">Door Module</div>
+                    {/* Train Protection Module */}
+                    <div className="module">
+                        <div className="module-title">Train Protection</div>
                         <div className="module-content">
-                            <CompressorButton 
-                                label={doorLocked ? "LOCKED" : "UNLOCKED"}
-                                icon={doorLocked ? "🔒" : "🔓"}
-                                isActive={!doorLocked}
-                                onClick={handleDoorToggle}
-                            />
-                            <CompressorButton 
-                                label="WARNING"
-                                icon="⚠"
-                                isActive={false}
-                                onClick={() => {}}
-                            />
-                            <CompressorButton 
-                                label="OPEN"
-                                icon="🚪"
-                                isActive={false}
-                                onClick={() => {}}
-                            />
+                            <button 
+                                className={`control-button ${parkingBrakeOn ? 'active' : ''}`}
+                                onClick={() => setParkingBrakeOn(!parkingBrakeOn)}
+                            >
+                                BRAKE ⚠
+                            </button>
+                            <button className="control-button">
+                                TIMER ⏱
+                            </button>
+                            <button className="control-button">
+                                POWER ⚡
+                            </button>
                         </div>
                     </div>
-
-                    {/* Controller Module */}
-                    <ControllerModule 
-                        throttlePosition={throttlePosition}
-                        headlightsOn={headlightsOn}
-                        cabinLightsOn={cabinLightsOn}
-                        ventilationOn={ventilationOn}
-                        defrostOn={defrostOn}
-                        hornActive={hornActive}
-                        fanActive={fanActive}
-                        onToggleHeadlights={handleLightsToggle}
-                        onToggleCabinLights={() => setCabinLightsOn(!cabinLightsOn)}
-                        onToggleVentilation={() => setVentilationOn(!ventilationOn)}
-                        onToggleDefrost={() => setDefrostOn(!defrostOn)}
-                        onActivateHorn={handleHornActivate}
-                        onToggleFan={() => setFanActive(!fanActive)}
-                    />
-                </div>
-            </div>
-            
-            {/* Right Panel - Controls */}
-            <div className="right-panel">
-                {/* Direction Module */}
-                <div className="module-container">
-                    <div className="module-title">Direction Module</div>
-                    <div className="module-content direction-module">
-                        <CompressorButton 
-                            label="FORWARD"
-                            icon="⬆️"
-                            isActive={reverserPosition === 'forward'}
-                            onClick={() => handleDirectionChange('forward')}
-                        />
-                        <CompressorButton 
-                            label="NEUTRAL"
-                            icon="⏹️"
-                            isActive={reverserPosition === 'neutral'}
-                            onClick={() => handleDirectionChange('neutral')}
-                        />
-                        <CompressorButton 
-                            label="REVERSE"
-                            icon="⬇️"
-                            isActive={reverserPosition === 'reverse'}
-                            onClick={() => handleDirectionChange('reverse')}
-                        />
+                    
+                    {/* Central Unit Module */}
+                    <div className="module">
+                        <div className="module-title">Central Unit</div>
+                        <div className="module-content">
+                            <button 
+                                className={`control-button ${centralUnitOpen ? 'active' : ''}`}
+                                onClick={() => setCentralUnitOpen(true)}
+                            >
+                                PANEL 🔌
+                            </button>
+                            <button className="control-button">
+                                CONFIG ⚙️
+                            </button>
+                            <button className="control-button">
+                                STATS 📊
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                {/* Throttle Control */}
-                <div className="throttle-control">
-                    <div className="throttle-label">THROTTLE</div>
-                    <div 
-                        className="throttle-track"
-                        ref={throttleRef}
-                        onMouseDown={handleMouseDown}
-                    >
-                        <div className="throttle-fill" style={{ height: `${throttlePosition}%` }}></div>
-                        <div 
-                            className="throttle-handle" 
-                            style={{ bottom: `calc(${throttlePosition}% - 15px)` }}
-                        ></div>
-                    </div>
-                    <div className="throttle-value">{throttlePosition}%</div>
                 </div>
                 
-                {/* Emergency Stop Button */}
-                <button 
-                    className="emergency-button"
-                    onClick={handleEmergencyStop}
-                >
-                    EMERGENCY STOP
-                </button>
-
-                {/* Startup Module */}
-                <div className="module-container">
-                    <div className="module-title">Startup Module</div>
-                    <div className="module-content">
-                        <CompressorButton 
-                            label="POWER"
-                            icon="⚡"
-                            isActive={engineStatus !== 'off'}
-                            onClick={handleEngineToggle}
-                        />
-                        <div className="startup-controls">
-                            <div className="startup-indicator">
-                                <div className={`indicator-light ${engineStatus !== 'off' ? 'active' : ''}`}></div>
-                                <div className="indicator-label">1</div>
+                {/* Center Controls */}
+                <div className="center-controls">
+                    {/* Gauges Row */}
+                    <div className="gauges-row">
+                        {/* Acceleration Gauge */}
+                        <div className="circular-gauge">
+                            <div className="gauge-inner">
+                                <div className="gauge-title">ACCELERATION</div>
+                                <div className="gauge-value">{(speed - prevSpeed).toFixed(1)}</div>
+                                <div className="gauge-unit">m/s²</div>
                             </div>
-                            <div className="startup-indicator">
-                                <div className={`indicator-light ${engineStatus !== 'off' && throttlePosition > 0 ? 'active' : ''}`}></div>
-                                <div className="indicator-label">0</div>
+                        </div>
+                        
+                        {/* Power Efficiency Gauge */}
+                        <div className="circular-gauge">
+                            <div className="gauge-inner">
+                                <div className="gauge-title">POWER</div>
+                                <div className="gauge-value">{throttlePosition}</div>
+                                <div className="gauge-unit">%</div>
+                            </div>
+                        </div>
+                        
+                        {/* Signal Status */}
+                        <div className="circular-gauge">
+                            <div className="gauge-inner">
+                                <div className="gauge-title">SIGNAL</div>
+                                <div className="signal-lights">
+                                    <div 
+                                        className={`signal-light red ${signal === 'red' ? 'active' : ''}`}
+                                        id="red-signal-light"
+                                    ></div>
+                                    <div 
+                                        className={`signal-light yellow ${signal === 'yellow' ? 'active' : ''}`}
+                                        id="yellow-signal-light"
+                                    ></div>
+                                    <div 
+                                        className={`signal-light green ${signal === 'green' ? 'active' : ''}`}
+                                        id="green-signal-light"
+                                    ></div>
+                                </div>
+                                <div className="gauge-value">{signal ? signal.toUpperCase() : 'UNKNOWN'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Signal Control Buttons */}
+                    <div className="module">
+                        <div className="module-title">Signal Control</div>
+                        <div className="module-content">
+                            <button 
+                                className="control-button"
+                                onClick={() => handleSignalChange('red')}
+                                style={{ background: '#e74c3c' }}
+                            >
+                                RED
+                            </button>
+                            <button 
+                                className="control-button"
+                                onClick={() => handleSignalChange('yellow')}
+                                style={{ background: '#f39c12' }}
+                            >
+                                YELLOW
+                            </button>
+                            <button 
+                                className="control-button"
+                                onClick={() => handleSignalChange('green')}
+                                style={{ background: '#2ecc71' }}
+                            >
+                                GREEN
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Door and Controller Modules */}
+                    <div className="modules-container">
+                        {/* Door Module */}
+                        <div className="module">
+                            <div className="module-title">Door Control</div>
+                            <div className="module-content">
+                                <button 
+                                    className={`control-button ${!doorLocked ? 'active' : ''}`}
+                                    onClick={handleDoorToggle}
+                                >
+                                    {doorLocked ? "LOCKED 🔒" : "UNLOCKED 🔓"}
+                                </button>
+                                <button className="control-button">
+                                    WARNING ⚠
+                                </button>
+                                <button className="control-button">
+                                    OPEN 🚪
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Controller Module */}
+                        <div className="module">
+                            <div className="module-title">Controls</div>
+                            <div className="module-content">
+                                <button 
+                                    className={`control-button ${cabinLightsOn ? 'active' : ''}`}
+                                    onClick={handleCabinLightsToggle}
+                                >
+                                    CABIN 💡
+                                </button>
+                                <button 
+                                    className={`control-button ${ventilationOn ? 'active' : ''}`}
+                                    onClick={handleVentilationToggle}
+                                >
+                                    VENT 🌀
+                                </button>
+                                <button 
+                                    className={`control-button ${headlightsOn ? 'active' : ''}`}
+                                    onClick={handleLightsToggle}
+                                >
+                                    LIGHTS 🔦
+                                </button>
+                                <button 
+                                    className={`control-button ${hornActive ? 'active' : ''}`}
+                                    onClick={handleHornActivate}
+                                >
+                                    HORN 📢
+                                </button>
+                                <button 
+                                    className={`control-button ${defrostOn ? 'active' : ''}`}
+                                    onClick={handleDefrostToggle}
+                                >
+                                    DEFROST ❄️
+                                </button>
+                                <button 
+                                    className={`control-button ${fanActive ? 'active' : ''}`}
+                                    onClick={handleFanToggle}
+                                >
+                                    FAN 🌬️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Emergency Stop Button */}
+                    <button 
+                        className="emergency-button"
+                        onClick={handleEmergencyStop}
+                    >
+                        EMERGENCY STOP
+                    </button>
+                </div>
+                
+                {/* Right Controls */}
+                <div className="right-controls">
+                    {/* Direction Module */}
+                    <div className="module">
+                        <div className="module-title">Direction</div>
+                        <div className="module-content">
+                            <button 
+                                className={`control-button ${reverserPosition === 'forward' ? 'active' : ''}`}
+                                onClick={() => handleDirectionChange('forward')}
+                            >
+                                FORWARD ⬆️
+                            </button>
+                            <button 
+                                className={`control-button ${reverserPosition === 'neutral' ? 'active' : ''}`}
+                                onClick={() => handleDirectionChange('neutral')}
+                            >
+                                NEUTRAL ⏹️
+                            </button>
+                            <button 
+                                className={`control-button ${reverserPosition === 'reverse' ? 'active' : ''}`}
+                                onClick={() => handleDirectionChange('reverse')}
+                            >
+                                REVERSE ⬇️
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Throttle Control */}
+                    <div className="throttle-control">
+                        <div 
+                            className="throttle-track"
+                            ref={throttleRef}
+                            onMouseDown={handleMouseDown}
+                        >
+                            <div className="throttle-fill" style={{ height: `${throttlePosition}%` }}></div>
+                            <div 
+                                className="throttle-handle" 
+                                style={{ bottom: `calc(${throttlePosition}% - 12px)` }}
+                            ></div>
+                        </div>
+                    </div>
+                    
+                    {/* Start/Stop Module */}
+                    <div className="module">
+                        <div className="module-title">ENGINE</div>
+                        <div className="module-content">
+                            <div className="start-stop-container">
+                                <button 
+                                    className={`engine-button ${engineStatus === 'on' ? 'engine-on' : 'engine-off'}`}
+                                    onClick={toggleEngine}
+                                >
+                                    {engineStatus === 'on' ? 'STOP ENGINE' : 'START ENGINE'}
+                                </button>
+                                <div className={`engine-status ${engineStatus === 'on' ? 'status-on' : 'status-off'}`}>
+                                    {engineStatus === 'on' ? 'RUNNING' : 'OFF'}
+                                </div>
                             </div>
                         </div>
                     </div>

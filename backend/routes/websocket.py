@@ -45,19 +45,38 @@ class ConnectionManager:
     async def update_simulation(self, data: Dict):
         print(f"Received update data: {data}")
         
-        # Handle signal updates first and explicitly
+        # Handle engine status updates first
+        if "engine_status" in data:
+            new_status = data["engine_status"]
+            print(f"Engine status update detected: {new_status}")
+            self.simulation.engine_status = new_status
+            
+            # If engine is turned off, reset speed and throttle
+            if new_status == "off":
+                self.simulation.speed = 0
+                self.simulation.throttle_position = 0
+                print("Engine turned off: resetting speed and throttle")
+        
+        # Handle signal updates
         if "signal" in data:
             new_signal = data["signal"]
             print(f"Signal update detected: {new_signal}")
             self.simulation.signal = new_signal
             
-        # Handle other updates
-        if "speed" in data:
-            self.simulation.speed = data["speed"]
+        # Handle throttle updates
         if "throttle_position" in data:
-            self.simulation.throttle_position = data["throttle_position"]
-        if "engine_status" in data:
-            self.simulation.engine_status = data["engine_status"]
+            new_throttle = data["throttle_position"]
+            print(f"Throttle update detected: {new_throttle}")
+            self.simulation.throttle_position = new_throttle
+            
+            # Update speed based on throttle if engine is on
+            if self.simulation.engine_status == "on":
+                target_speed = self.simulation.throttle_position * 1.2
+                self.simulation.speed = min(target_speed, self.simulation.speed + 2)
+                print(f"Engine on: updating speed to {self.simulation.speed}")
+            else:
+                self.simulation.speed = 0
+                print("Engine off: speed remains 0")
         
         # Prepare response with updated state
         response = {
@@ -69,7 +88,9 @@ class ConnectionManager:
             "fuelLevel": self.simulation.fuel_level
         }
         
-        print(f"Updated signal value: {self.simulation.signal}")
+        print(f"Updated engine status: {self.simulation.engine_status}")
+        print(f"Updated throttle position: {self.simulation.throttle_position}")
+        print(f"Updated speed: {self.simulation.speed}")
         print(f"Broadcasting response: {response}")
         
         # Broadcast to all clients

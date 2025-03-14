@@ -82,7 +82,19 @@ export class WebSocketService {
         return acc;
       }, {} as any);
 
-      // Special handling for signal updates - update Redux store directly for immediate UI feedback
+      // Special handling for engine status updates - update Redux store directly for immediate UI feedback
+      if (data.engine_status !== undefined) {
+        console.log(`Sending engine status update: ${data.engine_status}`);
+        this.dispatch(updateSimulation({ engineStatus: data.engine_status }));
+      }
+
+      // Special handling for throttle position updates
+      if (data.throttle_position !== undefined) {
+        console.log(`Sending throttle position update: ${data.throttle_position}`);
+        this.dispatch(updateSimulation({ throttlePosition: data.throttle_position }));
+      }
+
+      // Special handling for signal updates
       if (data.signal) {
         console.log(`Sending signal update: ${data.signal}`);
         this.dispatch(updateSimulation({ signal: data.signal }));
