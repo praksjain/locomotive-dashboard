@@ -5,8 +5,10 @@ import { WebSocketService } from '../services/WebSocketService';
 import { EnhancedSoundService } from '../services/EnhancedSoundService';
 import { updateSimulation } from '../store/simulationSlice';
 import ControllerModule from './ControllerModule';
+import CentralUnitModule from './CentralUnitModule';
 import '../styles/TrainCabin.css';
 import '../styles/ControllerModule.css';
+import '../styles/CentralUnitModule.css';
 
 const TrainCabin: React.FC = () => {
     const dispatch = useDispatch();
@@ -38,6 +40,7 @@ const TrainCabin: React.FC = () => {
     const [batteryIsolated, setBatteryIsolated] = useState(false);
     const [reverserPosition, setReverserPosition] = useState('neutral');
     const [fanActive, setFanActive] = useState(false);
+    const [centralUnitOpen, setCentralUnitOpen] = useState(false);
 
     useEffect(() => {
         console.log('Initializing WebSocket service...');
@@ -307,6 +310,25 @@ const TrainCabin: React.FC = () => {
                         ></button>
                     </div>
                 </div>
+
+                {/* Central Unit Module */}
+                <div className="module-container">
+                    <div className="module-title">Central Unit Module</div>
+                    <div className="module-content">
+                        <button 
+                            className="circular-button neutral-color"
+                            onClick={() => setCentralUnitOpen(true)}
+                        >
+                            <div className="button-icon">🔌</div>
+                        </button>
+                        <button className="circular-button neutral-color">
+                            <div className="button-icon">⚙️</div>
+                        </button>
+                        <button className="circular-button neutral-color">
+                            <div className="button-icon">📊</div>
+                        </button>
+                    </div>
+                </div>
             </div>
             
             {/* Center Panel - Main Gauges */}
@@ -534,6 +556,12 @@ const TrainCabin: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Central Unit Module Popup */}
+            <CentralUnitModule 
+                isOpen={centralUnitOpen} 
+                onClose={() => setCentralUnitOpen(false)} 
+            />
         </div>
     );
 };

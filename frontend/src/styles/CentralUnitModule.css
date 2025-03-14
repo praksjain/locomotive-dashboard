@@ -1,0 +1,513 @@
+/* Central Unit Module Overlay */
+.central-unit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Central Unit Popup */
+.central-unit-popup {
+  width: 90%;
+  height: 90%;
+  background-color: #1a2533;
+  border: 2px solid #456789;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.central-unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #34495e;
+  border-bottom: 2px solid #456789;
+}
+
+.central-unit-header h2 {
+  color: #ecf0f1;
+  margin: 0;
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #ecf0f1;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.close-button:hover {
+  color: #e74c3c;
+}
+
+/* Content */
+.central-unit-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Panel Grid */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  gap: 20px;
+}
+
+/* Panel Items */
+.panel-item {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px dashed #456789;
+  border-radius: 5px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ecf0f1;
+  text-align: center;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.panel-subtitle {
+  font-size: 14px;
+  color: #bdc3c7;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.panel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Door Panel */
+.door-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.panel-box {
+  border: 1px dashed #456789;
+  padding: 20px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.panel-small-box {
+  border: 1px dashed #456789;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+.panel-label {
+  font-size: 14px;
+  color: #ecf0f1;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.panel-switches {
+  display: flex;
+  justify-content: center;
+}
+
+.switch-group {
+  display: flex;
+  gap: 5px;
+}
+
+.switch {
+  width: 15px;
+  height: 30px;
+  background-color: #34495e;
+  border: 1px solid #456789;
+}
+
+/* Drive Panel */
+.drive-panel {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.drive-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drive-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.drive-cell {
+  flex: 1;
+  border: 1px dashed #456789;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #ecf0f1;
+}
+
+.drive-switches {
+  border: 1px dashed #456789;
+  padding: 10px;
+  height: 80px;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.drive-controls {
+  border: 1px dashed #456789;
+  padding: 10px;
+  height: 60px;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.control-row {
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* DRV Panel */
+.drv-panel {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.drv-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drv-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.drv-cell {
+  flex: 1;
+  border: 1px dashed #456789;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #ecf0f1;
+}
+
+.separator {
+  height: 20px;
+  background-color: #1a2533;
+  border-left: 1px dashed #456789;
+  border-right: 1px dashed #456789;
+}
+
+.drv-switches {
+  border: 1px dashed #456789;
+  padding: 10px;
+  height: 80px;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Gland Panel */
+.gland-panel {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.gland-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gland-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ecf0f1;
+  margin-bottom: 5px;
+}
+
+.gland-subtitle {
+  font-size: 14px;
+  color: #bdc3c7;
+  margin-bottom: 15px;
+}
+
+.gland-circles {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #456789;
+  background-color: #34495e;
+}
+
+/* Display Panel */
+.display-panel {
+  grid-column: 1 / span 2;
+  grid-row: 2;
+}
+
+.display-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.display-screen {
+  height: 150px;
+  border: 1px dashed #456789;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.display-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.button-row {
+  display: flex;
+  gap: 20px;
+}
+
+.display-button {
+  width: 40px;
+  height: 40px;
+  border: 1px dashed #456789;
+  background-color: #34495e;
+}
+
+/* Control Panel */
+.control-panel {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.control-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.control-display {
+  height: 100px;
+  border: 1px dashed #456789;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.control-switches {
+  height: 60px;
+  border: 1px dashed #456789;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+}
+
+/* Gland Details Panel */
+.gland-details-panel {
+  grid-column: 2 / span 2;
+  grid-row: 3;
+}
+
+.gland-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gland-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gland-item {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #456789;
+  background-color: #34495e;
+}
+
+/* Power Switch Icon */
+.power-switch-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: #ecf0f1;
+}
+
+/* Power Switch Panel */
+.power-switch-panel {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.power-switch-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.power-switch {
+  width: 80px;
+  height: 160px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid #456789;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.power-switch-body {
+  width: 60px;
+  height: 120px;
+  background-color: #34495e;
+  border: 2px solid #456789;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.power-switch-body:before,
+.power-switch-body:after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #ecf0f1;
+  border-radius: 50%;
+}
+
+.power-switch-body:before {
+  top: 10px;
+}
+
+.power-switch-body:after {
+  bottom: 10px;
+}
+
+.power-switch-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ecf0f1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .panel-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .door-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .drive-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  .drv-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  .gland-panel {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  
+  .display-panel {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+  }
+  
+  .control-panel {
+    grid-column: 1;
+    grid-row: 4;
+  }
+  
+  .gland-details-panel {
+    grid-column: 2;
+    grid-row: 4;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .door-panel,
+  .drive-panel,
+  .drv-panel,
+  .gland-panel,
+  .display-panel,
+  .control-panel,
+  .gland-details-panel {
+    grid-column: 1;
+  }
+  
+  .door-panel { grid-row: 1; }
+  .drive-panel { grid-row: 2; }
+  .drv-panel { grid-row: 3; }
+  .gland-panel { grid-row: 4; }
+  .display-panel { grid-row: 5; }
+  .control-panel { grid-row: 6; }
+  .gland-details-panel { grid-row: 7; }
+} 
