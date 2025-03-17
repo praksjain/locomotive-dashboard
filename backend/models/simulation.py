@@ -30,6 +30,11 @@ class SimulationState:
                 self.speed = min(target_speed, self.speed + 2)
             else:
                 self.speed = 0
+                
+        if "signal" in data:
+            new_signal = data["signal"]
+            print(f"Changing signal from {self.signal} to {new_signal}")
+            self.signal = new_signal
 
         state = self.to_dict()
         print(f"New state after update: {state}")
