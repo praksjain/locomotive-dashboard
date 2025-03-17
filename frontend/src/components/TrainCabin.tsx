@@ -12,6 +12,21 @@ import '../styles/ControllerModule.css';
 import '../styles/CentralUnitModule.css';
 import '../styles/CompressorButton.css';
 
+// Add a Tooltip component
+const Tooltip = ({ text, x, y }: { text: string, x: number, y: number }) => (
+    <div className="tooltip" style={{ left: `${x + 15}px`, top: `${y + 15}px` }}>
+        {text}
+    </div>
+);
+
+// Add a Notification component
+const Notification = ({ message, type, onClose }: { message: string, type: 'success' | 'warning' | 'error', onClose: () => void }) => (
+    <div className={`notification ${type}`}>
+        <span>{message}</span>
+        <button onClick={onClose}>×</button>
+    </div>
+);
+
 const TrainCabin: React.FC = () => {
     const dispatch = useDispatch();
     const { engineStatus, throttlePosition, speed, brakePressure, fuelLevel, engineTemp, oilPressure, cabinTemp, fanSpeed, signal } = 
@@ -43,6 +58,67 @@ const TrainCabin: React.FC = () => {
     const [reverserPosition, setReverserPosition] = useState('neutral');
     const [fanActive, setFanActive] = useState(false);
     const [centralUnitOpen, setCentralUnitOpen] = useState(false);
+    const [wiperActive, setWiperActive] = useState(false);
+    const [radioActive, setRadioActive] = useState(false);
+    const [heaterActive, setHeaterActive] = useState(false);
+    const [airCondActive, setAirCondActive] = useState(false);
+    const [nightModeActive, setNightModeActive] = useState(false);
+    const [autoSignalActive, setAutoSignalActive] = useState(false);
+    
+    // Add notification state
+    const [notifications, setNotifications] = useState<Array<{id: number, message: string, type: 'success' | 'warning' | 'error'}>>([]);
+    const [nextNotificationId, setNextNotificationId] = useState(1);
+    
+    // Update tooltip state to include position
+    const [tooltip, setTooltip] = useState<{text: string, visible: boolean, x: number, y: number}>({
+        text: '', 
+        visible: false,
+        x: 0,
+        y: 0
+    });
+    
+    // Function to show a notification
+    const showNotification = (message: string, type: 'success' | 'warning' | 'error' = 'success') => {
+        const id = nextNotificationId;
+        setNotifications(prev => [...prev, {id, message, type}]);
+        setNextNotificationId(prev => prev + 1);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            dismissNotification(id);
+        }, 3000);
+    };
+    
+    // Function to dismiss a notification
+    const dismissNotification = (id: number) => {
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
+    };
+    
+    // Function to show tooltip with position
+    const showTooltip = (text: string, event: React.MouseEvent) => {
+        setTooltip({
+            text, 
+            visible: true,
+            x: event.clientX,
+            y: event.clientY
+        });
+    };
+    
+    // Function to hide tooltip
+    const hideTooltip = () => {
+        setTooltip({...tooltip, visible: false});
+    };
+    
+    // Function to update tooltip position on mouse move
+    const updateTooltipPosition = (event: React.MouseEvent) => {
+        if (tooltip.visible) {
+            setTooltip({
+                ...tooltip,
+                x: event.clientX,
+                y: event.clientY
+            });
+        }
+    };
 
     useEffect(() => {
         console.log('Initializing WebSocket service...');
@@ -192,11 +268,13 @@ const TrainCabin: React.FC = () => {
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
     const handleEmergencyStop = () => {
-        wsRef.current?.sendUpdate({
-            throttle_position: 0,
-            brake_pressure: 100,
-            engine_status: 'off'
-        });
+        if (engineStatus === 'on') {
+            dispatch(updateSimulation({ engineStatus: 'off', throttlePosition: 0, speed: 0 }));
+            wsRef.current?.sendUpdate({ engine_status: 'off', throttle_position: 0 });
+            showNotification('EMERGENCY STOP ACTIVATED', 'warning');
+        } else {
+            showNotification('Engine is already off', 'success');
+        }
     };
 
     // Add a useEffect to log signal changes
@@ -211,8 +289,10 @@ const TrainCabin: React.FC = () => {
         if (wsRef.current) {
             console.log(`WebSocket reference exists, sending signal: ${newSignal}`);
             wsRef.current.sendUpdate({ signal: newSignal });
+            showNotification(`Signal changed to ${newSignal.toUpperCase()}`, 'success');
         } else {
             console.error('WebSocket reference is null or undefined');
+            showNotification('Failed to change signal - WebSocket not connected', 'error');
         }
         
         // Force update the local state for immediate UI feedback
@@ -294,6 +374,50 @@ const TrainCabin: React.FC = () => {
         console.log(`Fan ${newState ? 'ON' : 'OFF'}`);
     };
 
+    // Add handlers for new controls
+    const handleWiperToggle = () => {
+        const newState = !wiperActive;
+        setWiperActive(newState);
+        wsRef.current?.sendUpdate({ wiper: newState });
+        console.log(`Wiper ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleRadioToggle = () => {
+        const newState = !radioActive;
+        setRadioActive(newState);
+        wsRef.current?.sendUpdate({ radio: newState });
+        console.log(`Radio ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleHeaterToggle = () => {
+        const newState = !heaterActive;
+        setHeaterActive(newState);
+        wsRef.current?.sendUpdate({ heater: newState });
+        console.log(`Heater ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleAirCondToggle = () => {
+        const newState = !airCondActive;
+        setAirCondActive(newState);
+        wsRef.current?.sendUpdate({ air_cond: newState });
+        console.log(`Air Conditioning ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleNightModeToggle = () => {
+        const newState = !nightModeActive;
+        setNightModeActive(newState);
+        wsRef.current?.sendUpdate({ night_mode: newState });
+        showNotification(`Night Mode ${newState ? 'Activated' : 'Deactivated'}`, 'success');
+        console.log(`Night Mode ${newState ? 'ON' : 'OFF'}`);
+    };
+
+    const handleAutoSignalToggle = () => {
+        const newState = !autoSignalActive;
+        setAutoSignalActive(newState);
+        wsRef.current?.sendUpdate({ auto_signal: newState });
+        console.log(`Auto Signal ${newState ? 'ON' : 'OFF'}`);
+    };
+
     // Add useEffect hooks to log state changes for debugging
     useEffect(() => {
         console.log(`Headlights state: ${headlightsOn ? 'ON' : 'OFF'}`);
@@ -316,7 +440,7 @@ const TrainCabin: React.FC = () => {
     }, [hornActive]);
 
     return (
-        <div className={`locomotive-dashboard ${engineStatus === 'off' ? 'engine-off' : ''}`}>
+        <div className={`locomotive-dashboard ${engineStatus === 'off' ? 'engine-off' : ''} ${nightModeActive ? 'night-mode' : ''}`}>
             {/* Windshield View */}
             <div className="windshield-view">
                 <div className="track"></div>
@@ -377,6 +501,48 @@ const TrainCabin: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                    
+                    {/* Signal Control Buttons - Moved below Central Unit */}
+                    <div className="module">
+                        <div className="module-title">Signal Control</div>
+                        <div className="module-content">
+                            <button 
+                                className={`control-button ${signal === 'red' ? 'active' : ''}`}
+                                onClick={() => handleSignalChange('red')}
+                                style={{ background: '#e74c3c' }}
+                                onMouseEnter={(e) => showTooltip('Set signal to RED - Stop train', e)}
+                                onMouseLeave={hideTooltip}
+                            >
+                                RED
+                            </button>
+                            <button 
+                                className={`control-button ${signal === 'yellow' ? 'active' : ''}`}
+                                onClick={() => handleSignalChange('yellow')}
+                                style={{ background: '#f39c12' }}
+                                onMouseEnter={(e) => showTooltip('Set signal to YELLOW - Proceed with caution', e)}
+                                onMouseLeave={hideTooltip}
+                            >
+                                YELLOW
+                            </button>
+                            <button 
+                                className={`control-button ${signal === 'green' ? 'active' : ''}`}
+                                onClick={() => handleSignalChange('green')}
+                                style={{ background: '#2ecc71' }}
+                                onMouseEnter={(e) => showTooltip('Set signal to GREEN - Proceed normally', e)}
+                                onMouseLeave={hideTooltip}
+                            >
+                                GREEN
+                            </button>
+                            <button 
+                                className={`control-button ${autoSignalActive ? 'active' : ''}`}
+                                onClick={handleAutoSignalToggle}
+                                onMouseEnter={(e) => showTooltip('Toggle automatic signal control', e)}
+                                onMouseLeave={hideTooltip}
+                            >
+                                AUTO 🔄
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 {/* Center Controls */}
@@ -424,34 +590,6 @@ const TrainCabin: React.FC = () => {
                         </div>
                     </div>
                     
-                    {/* Signal Control Buttons */}
-                    <div className="module">
-                        <div className="module-title">Signal Control</div>
-                        <div className="module-content">
-                            <button 
-                                className="control-button"
-                                onClick={() => handleSignalChange('red')}
-                                style={{ background: '#e74c3c' }}
-                            >
-                                RED
-                            </button>
-                            <button 
-                                className="control-button"
-                                onClick={() => handleSignalChange('yellow')}
-                                style={{ background: '#f39c12' }}
-                            >
-                                YELLOW
-                            </button>
-                            <button 
-                                className="control-button"
-                                onClick={() => handleSignalChange('green')}
-                                style={{ background: '#2ecc71' }}
-                            >
-                                GREEN
-                            </button>
-                        </div>
-                    </div>
-                    
                     {/* Door and Controller Modules */}
                     <div className="modules-container">
                         {/* Door Module */}
@@ -480,38 +618,90 @@ const TrainCabin: React.FC = () => {
                                 <button 
                                     className={`control-button ${cabinLightsOn ? 'active' : ''}`}
                                     onClick={handleCabinLightsToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle cabin interior lights', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     CABIN 💡
                                 </button>
                                 <button 
                                     className={`control-button ${ventilationOn ? 'active' : ''}`}
                                     onClick={handleVentilationToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle ventilation system', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     VENT 🌀
                                 </button>
                                 <button 
                                     className={`control-button ${headlightsOn ? 'active' : ''}`}
                                     onClick={handleLightsToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle exterior headlights', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     LIGHTS 🔦
                                 </button>
                                 <button 
                                     className={`control-button ${hornActive ? 'active' : ''}`}
                                     onClick={handleHornActivate}
+                                    onMouseEnter={(e) => showTooltip('Sound the horn', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     HORN 📢
                                 </button>
                                 <button 
                                     className={`control-button ${defrostOn ? 'active' : ''}`}
                                     onClick={handleDefrostToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle window defrost system', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     DEFROST ❄️
                                 </button>
                                 <button 
                                     className={`control-button ${fanActive ? 'active' : ''}`}
                                     onClick={handleFanToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle cooling fan', e)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     FAN 🌬️
+                                </button>
+                                <button 
+                                    className={`control-button ${wiperActive ? 'active' : ''}`}
+                                    onClick={handleWiperToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle windshield wipers', e)}
+                                    onMouseLeave={hideTooltip}
+                                >
+                                    WIPER 🌧️
+                                </button>
+                                <button 
+                                    className={`control-button ${radioActive ? 'active' : ''}`}
+                                    onClick={handleRadioToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle radio communication', e)}
+                                    onMouseLeave={hideTooltip}
+                                >
+                                    RADIO 📻
+                                </button>
+                                <button 
+                                    className={`control-button ${heaterActive ? 'active' : ''}`}
+                                    onClick={handleHeaterToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle cabin heating system', e)}
+                                    onMouseLeave={hideTooltip}
+                                >
+                                    HEATER 🔥
+                                </button>
+                                <button 
+                                    className={`control-button ${airCondActive ? 'active' : ''}`}
+                                    onClick={handleAirCondToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle air conditioning', e)}
+                                    onMouseLeave={hideTooltip}
+                                >
+                                    A/C ❄️
+                                </button>
+                                <button 
+                                    className={`control-button ${nightModeActive ? 'active' : ''}`}
+                                    onClick={handleNightModeToggle}
+                                    onMouseEnter={(e) => showTooltip('Toggle night mode for reduced brightness', e)}
+                                    onMouseLeave={hideTooltip}
+                                >
+                                    NIGHT 🌙
                                 </button>
                             </div>
                         </div>
@@ -593,6 +783,21 @@ const TrainCabin: React.FC = () => {
                 isOpen={centralUnitOpen} 
                 onClose={() => setCentralUnitOpen(false)} 
             />
+            
+            {/* Tooltip */}
+            {tooltip.visible && <Tooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
+            
+            {/* Notifications */}
+            <div className="notifications-container">
+                {notifications.map(notification => (
+                    <Notification 
+                        key={notification.id}
+                        message={notification.message}
+                        type={notification.type}
+                        onClose={() => dismissNotification(notification.id)}
+                    />
+                ))}
+            </div>
         </div>
     );
 };

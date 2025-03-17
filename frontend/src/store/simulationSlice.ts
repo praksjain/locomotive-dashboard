@@ -28,6 +28,14 @@ interface SimulationState {
   auxiliaryPower: boolean;
   brakeLight: boolean;
   cabinLights: boolean;
+  ventilation: boolean;
+  defrost: boolean;
+  fan: boolean;
+  wiper: boolean;
+  heater: boolean;
+  airCond: boolean;
+  nightMode: boolean;
+  autoSignal: boolean;
 }
 
 const initialState: SimulationState = {
@@ -58,6 +66,14 @@ const initialState: SimulationState = {
   auxiliaryPower: false,
   brakeLight: false,
   cabinLights: true,
+  ventilation: false,
+  defrost: false,
+  fan: false,
+  wiper: false,
+  heater: false,
+  airCond: false,
+  nightMode: false,
+  autoSignal: false,
 };
 
 const simulationSlice = createSlice({

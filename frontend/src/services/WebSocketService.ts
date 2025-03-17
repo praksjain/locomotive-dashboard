@@ -19,6 +19,11 @@ interface WebSocketMessage {
   cabin_lights: boolean;
   cabin_temp: number;
   fan_speed: number;
+  wiper: boolean;
+  heater: boolean;
+  air_cond: boolean;
+  night_mode: boolean;
+  auto_signal: boolean;
 }
 
 export class WebSocketService {
@@ -98,6 +103,37 @@ export class WebSocketService {
       if (data.signal) {
         console.log(`Sending signal update: ${data.signal}`);
         this.dispatch(updateSimulation({ signal: data.signal }));
+      }
+
+      // Special handling for new controls
+      if (data.wiper !== undefined) {
+        console.log(`Sending wiper update: ${data.wiper}`);
+        this.dispatch(updateSimulation({ wiper: data.wiper }));
+      }
+
+      if (data.radio !== undefined) {
+        console.log(`Sending radio update: ${data.radio}`);
+        this.dispatch(updateSimulation({ radio: data.radio }));
+      }
+
+      if (data.heater !== undefined) {
+        console.log(`Sending heater update: ${data.heater}`);
+        this.dispatch(updateSimulation({ heater: data.heater }));
+      }
+
+      if (data.air_cond !== undefined) {
+        console.log(`Sending air conditioning update: ${data.air_cond}`);
+        this.dispatch(updateSimulation({ airCond: data.air_cond }));
+      }
+
+      if (data.night_mode !== undefined) {
+        console.log(`Sending night mode update: ${data.night_mode}`);
+        this.dispatch(updateSimulation({ nightMode: data.night_mode }));
+      }
+
+      if (data.auto_signal !== undefined) {
+        console.log(`Sending auto signal update: ${data.auto_signal}`);
+        this.dispatch(updateSimulation({ autoSignal: data.auto_signal }));
       }
 
       console.log('Sending to server:', convertedData);
