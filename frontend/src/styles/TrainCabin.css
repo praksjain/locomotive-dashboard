@@ -268,8 +268,22 @@
 /* Control Modules */
 .modules-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
     gap: 15px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.modules-container .module {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+}
+
+.modules-container .speed-module {
+    flex: 1;
+    margin-top: 0;
 }
 
 .module {
@@ -425,7 +439,8 @@
     border: 2px solid #456789;
     position: relative;
     margin: 0 auto;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7),
+                0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .throttle-track {
@@ -789,6 +804,15 @@
     .module {
         min-width: 120px;
     }
+    
+    .modules-container {
+        flex-direction: column;
+    }
+    
+    .modules-container .module {
+        width: 100%;
+        max-width: none;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1074,4 +1098,76 @@
 .indicator-light.left-top {
     top: 15px;
     left: 15px;
+}
+
+/* Emergency Stop Button */
+.emergency-stop-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #e74c3c, #c0392b);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.emergency-stop-button:hover {
+    background: linear-gradient(to bottom, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(231, 76, 60, 0.5);
+}
+
+.emergency-stop-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.5);
+}
+
+.emergency-stop-icon {
+    width: 32px;
+    height: 32px;
+    fill: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.emergency-stop-button:hover .emergency-stop-icon {
+    transform: scale(1.1);
+}
+
+.emergency-stop-button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    transform: scale(0);
+    transition: transform 0.3s ease-out;
+}
+
+.emergency-stop-button:hover::before {
+    transform: scale(1);
+}
+
+/* Speed Module */
+.speed-module {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.speed-module .module-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 } 
