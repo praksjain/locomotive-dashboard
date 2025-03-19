@@ -5,13 +5,13 @@ import { WebSocketService } from '../services/WebSocketService';
 import { EnhancedSoundService } from '../services/EnhancedSoundService';
 import { updateSimulation } from '../store/simulationSlice';
 import ControllerModule from './ControllerModule';
-import CentralUnitModule from './CentralUnitModule';
+import CentralUnitPanel from './CentralUnitPanel';
 import CompressorButton from './CompressorButton';
 import DirectionModule from './DirectionModule';
 import StartupModule from './StartupModule';
 import '../styles/TrainCabin.css';
 import '../styles/ControllerModule.css';
-import '../styles/CentralUnitModule.css';
+import '../styles/CentralUnitPanel.css';
 import '../styles/CompressorButton.css';
 import '../styles/DirectionStartupModules.css';
 
@@ -763,7 +763,7 @@ const TrainCabin: React.FC = () => {
             </div>
 
             {/* Central Unit Module Popup */}
-            <CentralUnitModule 
+            <CentralUnitPanel 
                 isOpen={centralUnitOpen} 
                 onClose={() => setCentralUnitOpen(false)} 
             />

@@ -1,0 +1,298 @@
+.central-unit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.central-unit-panel {
+    background: #2c3e50;
+    border: 2px solid #34495e;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 1000px;
+    height: 90vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 2px solid #34495e;
+    margin-bottom: 20px;
+}
+
+.siemens-logo {
+    color: #3498db;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #ecf0f1;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: #3498db;
+}
+
+.panel-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Control Sections */
+.control-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #34495e;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.section-header {
+    color: #3498db;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.controls-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.control-item {
+    flex: 1;
+    min-width: 100px;
+    max-width: 150px;
+}
+
+/* LED Indicators */
+.led-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.led-indicator:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.led-light {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #2c3e50;
+    border: 2px solid var(--led-color, #32CD32);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.led-indicator.active .led-light {
+    background: var(--led-color, #32CD32);
+    box-shadow: 0 0 15px var(--led-color, #32CD32);
+}
+
+.led-indicator span {
+    color: #ecf0f1;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Fan Controls */
+.fan-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.fan-control:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.fan-icon {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fan-blade {
+    position: absolute;
+    width: 30px;
+    height: 8px;
+    background: #7f8c8d;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.fan-blade:nth-child(1) { transform: rotate(0deg); }
+.fan-blade:nth-child(2) { transform: rotate(120deg); }
+.fan-blade:nth-child(3) { transform: rotate(240deg); }
+
+.fan-control.active .fan-blade {
+    background: #3498db;
+    box-shadow: 0 0 10px #3498db;
+}
+
+.fan-control.active .fan-icon {
+    animation: spin 1s linear infinite;
+}
+
+.fan-control span {
+    color: #ecf0f1;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Section Switch */
+.section-switch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.section-switch:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.switch-track {
+    width: 50px;
+    height: 24px;
+    background: #34495e;
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.switch-handle {
+    width: 20px;
+    height: 20px;
+    background: #ecf0f1;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+}
+
+.section-switch.active .switch-track {
+    background: #27ae60;
+}
+
+.section-switch.active .switch-handle {
+    left: calc(100% - 22px);
+}
+
+.section-switch span {
+    color: #ecf0f1;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Animations */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar Styling */
+.panel-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: #2c3e50;
+    border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background: #34495e;
+    border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #3498db;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .central-unit-panel {
+        width: 95%;
+        height: 95vh;
+        padding: 10px;
+    }
+
+    .controls-row {
+        gap: 10px;
+    }
+
+    .control-item {
+        min-width: 80px;
+    }
+
+    .led-light {
+        width: 25px;
+        height: 25px;
+    }
+
+    .fan-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .switch-track {
+        width: 40px;
+        height: 20px;
+    }
+
+    .switch-handle {
+        width: 16px;
+        height: 16px;
+    }
+} 
