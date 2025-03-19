@@ -466,7 +466,7 @@ const TrainCabin: React.FC = () => {
                     
                     {/* Train Protection Module */}
                     <div className="module">
-                        <div className="module-title">Train Protection</div>
+                        <div className="module-title">Train Protection Module</div>
                         <div className="module-content">
                             <button 
                                 className={`control-button ${parkingBrakeOn ? 'active' : ''}`}
@@ -594,7 +594,7 @@ const TrainCabin: React.FC = () => {
                     <div className="modules-container">
                         {/* Door Module */}
                         <div className="module">
-                            <div className="module-title">Door Control</div>
+                            <div className="module-title">Door Module</div>
                             <div className="module-content">
                                 <button 
                                     className={`control-button ${!doorLocked ? 'active' : ''}`}
@@ -613,7 +613,7 @@ const TrainCabin: React.FC = () => {
 
                         {/* Controller Module */}
                         <div className="module">
-                            <div className="module-title">Controls</div>
+                            <div className="module-title">Controller Module</div>
                             <div className="module-content">
                                 <button 
                                     className={`control-button ${cabinLightsOn ? 'active' : ''}`}
@@ -720,7 +720,7 @@ const TrainCabin: React.FC = () => {
                 <div className="right-controls">
                     {/* Direction Module */}
                     <div className="module">
-                        <div className="module-title">Direction</div>
+                        <div className="module-title">Direction Module</div>
                         <div className="module-content">
                             <button 
                                 className={`control-button ${reverserPosition === 'forward' ? 'active' : ''}`}
