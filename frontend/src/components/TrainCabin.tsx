@@ -7,10 +7,13 @@ import { updateSimulation } from '../store/simulationSlice';
 import ControllerModule from './ControllerModule';
 import CentralUnitModule from './CentralUnitModule';
 import CompressorButton from './CompressorButton';
+import DirectionModule from './DirectionModule';
+import StartupModule from './StartupModule';
 import '../styles/TrainCabin.css';
 import '../styles/ControllerModule.css';
 import '../styles/CentralUnitModule.css';
 import '../styles/CompressorButton.css';
+import '../styles/DirectionStartupModules.css';
 
 // Add a Tooltip component
 const Tooltip = ({ text, x, y }: { text: string, x: number, y: number }) => (
@@ -20,7 +23,7 @@ const Tooltip = ({ text, x, y }: { text: string, x: number, y: number }) => (
 );
 
 // Add a Notification component
-const Notification = ({ message, type, onClose }: { message: string, type: 'success' | 'warning' | 'error', onClose: () => void }) => (
+const Notification = ({ message, type, onClose }: { message: string, type: 'success' | 'warning' | 'error' | 'info', onClose: () => void }) => (
     <div className={`notification ${type}`}>
         <span>{message}</span>
         <button onClick={onClose}>×</button>
@@ -66,7 +69,7 @@ const TrainCabin: React.FC = () => {
     const [autoSignalActive, setAutoSignalActive] = useState(false);
     
     // Add notification state
-    const [notifications, setNotifications] = useState<Array<{id: number, message: string, type: 'success' | 'warning' | 'error'}>>([]);
+    const [notifications, setNotifications] = useState<Array<{id: number, message: string, type: 'success' | 'warning' | 'error' | 'info'}>>([]);
     const [nextNotificationId, setNextNotificationId] = useState(1);
     
     // Update tooltip state to include position
@@ -78,7 +81,7 @@ const TrainCabin: React.FC = () => {
     });
     
     // Function to show a notification
-    const showNotification = (message: string, type: 'success' | 'warning' | 'error' = 'success') => {
+    const showNotification = (message: string, type: 'success' | 'warning' | 'error' | 'info' = 'success') => {
         const id = nextNotificationId;
         setNotifications(prev => [...prev, {id, message, type}]);
         setNextNotificationId(prev => prev + 1);
@@ -184,6 +187,9 @@ const TrainCabin: React.FC = () => {
         
         if (newStatus === 'off') {
             console.log('Throttle reset to 0');
+            showNotification('Engine stopped', 'info');
+        } else {
+            showNotification('Engine started', 'success');
         }
     };
 
@@ -273,7 +279,7 @@ const TrainCabin: React.FC = () => {
             wsRef.current?.sendUpdate({ engine_status: 'off', throttle_position: 0 });
             showNotification('EMERGENCY STOP ACTIVATED', 'warning');
         } else {
-            showNotification('Engine is already off', 'success');
+            showNotification('Engine is already off', 'info');
         }
     };
 
@@ -336,13 +342,15 @@ const TrainCabin: React.FC = () => {
         }, 1000);
     };
 
-    const handleDirectionChange = (direction: string) => {
+    const handleDirectionChange = (direction: 'forward' | 'neutral' | 'reverse') => {
         if (engineStatus === 'off') {
             console.log('Cannot change direction while engine is off');
+            showNotification('Cannot change direction while engine is off', 'warning');
             return;
         }
         setReverserPosition(direction);
         wsRef.current?.sendUpdate({ reverser_position: direction });
+        showNotification(`Direction changed to ${direction}`, 'success');
         console.log(`Direction changed to: ${direction}`);
     };
 
@@ -719,29 +727,11 @@ const TrainCabin: React.FC = () => {
                 {/* Right Controls */}
                 <div className="right-controls">
                     {/* Direction Module */}
-                    <div className="module">
-                        <div className="module-title">Direction Module</div>
-                        <div className="module-content">
-                            <button 
-                                className={`control-button ${reverserPosition === 'forward' ? 'active' : ''}`}
-                                onClick={() => handleDirectionChange('forward')}
-                            >
-                                FORWARD ⬆️
-                            </button>
-                            <button 
-                                className={`control-button ${reverserPosition === 'neutral' ? 'active' : ''}`}
-                                onClick={() => handleDirectionChange('neutral')}
-                            >
-                                NEUTRAL ⏹️
-                            </button>
-                            <button 
-                                className={`control-button ${reverserPosition === 'reverse' ? 'active' : ''}`}
-                                onClick={() => handleDirectionChange('reverse')}
-                            >
-                                REVERSE ⬇️
-                            </button>
-                        </div>
-                    </div>
+                    <DirectionModule 
+                        position={reverserPosition as 'forward' | 'neutral' | 'reverse'}
+                        onChange={handleDirectionChange}
+                        engineStatus={engineStatus}
+                    />
                     
                     {/* Throttle Control */}
                     <div className="throttle-control">
@@ -758,23 +748,11 @@ const TrainCabin: React.FC = () => {
                         </div>
                     </div>
                     
-                    {/* Start/Stop Module */}
-                    <div className="module">
-                        <div className="module-title">ENGINE</div>
-                        <div className="module-content">
-                            <div className="start-stop-container">
-                                <button 
-                                    className={`engine-button ${engineStatus === 'on' ? 'engine-on' : 'engine-off'}`}
-                                    onClick={toggleEngine}
-                                >
-                                    {engineStatus === 'on' ? 'STOP ENGINE' : 'START ENGINE'}
-                                </button>
-                                <div className={`engine-status ${engineStatus === 'on' ? 'status-on' : 'status-off'}`}>
-                                    {engineStatus === 'on' ? 'RUNNING' : 'OFF'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Startup Module */}
+                    <StartupModule 
+                        engineStatus={engineStatus}
+                        onEngineToggle={toggleEngine}
+                    />
                 </div>
             </div>
 
