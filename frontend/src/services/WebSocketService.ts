@@ -30,6 +30,7 @@ export class WebSocketService {
   private ws: WebSocket | null = null;
   private dispatch: any;
   private isConnecting: boolean = false;
+  private speedUpdateInterval: NodeJS.Timeout | null = null;
 
   constructor(dispatch: any) {
     this.dispatch = dispatch;
@@ -45,6 +46,9 @@ export class WebSocketService {
     this.ws.onopen = () => {
       console.log('WebSocket Connected');
       this.isConnecting = false;
+      
+      // Start speed update interval when connected
+      this.startSpeedUpdates();
     };
 
     this.ws.onmessage = (event) => {
@@ -68,8 +72,29 @@ export class WebSocketService {
     this.ws.onclose = () => {
       console.log('WebSocket Disconnected');
       this.isConnecting = false;
+      this.stopSpeedUpdates();
       setTimeout(() => this.connect(), 1000);
     };
+  }
+
+  // Add this method to start periodic speed updates
+  startSpeedUpdates() {
+    if (this.speedUpdateInterval) {
+      clearInterval(this.speedUpdateInterval);
+    }
+    
+    // Send a "ping" update every 2 seconds to trigger speed calculations on the server
+    this.speedUpdateInterval = setInterval(() => {
+      this.sendUpdate({ update_speed: true });
+    }, 2000);
+  }
+  
+  // Add this method to stop periodic speed updates
+  stopSpeedUpdates() {
+    if (this.speedUpdateInterval) {
+      clearInterval(this.speedUpdateInterval);
+      this.speedUpdateInterval = null;
+    }
   }
 
   sendUpdate(data: any) {
@@ -144,6 +169,7 @@ export class WebSocketService {
   }
 
   disconnect() {
+    this.stopSpeedUpdates();
     if (this.ws) {
       this.ws.close();
     }

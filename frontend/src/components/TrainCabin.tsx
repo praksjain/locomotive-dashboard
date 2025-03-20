@@ -67,6 +67,7 @@ const TrainCabin: React.FC = () => {
     const [airCondActive, setAirCondActive] = useState(false);
     const [nightModeActive, setNightModeActive] = useState(false);
     const [autoSignalActive, setAutoSignalActive] = useState(false);
+    const [displaySpeed, setDisplaySpeed] = useState(0); // Add a state for smooth visual display
     
     // Add notification state
     const [notifications, setNotifications] = useState<Array<{id: number, message: string, type: 'success' | 'warning' | 'error' | 'info'}>>([]);
@@ -138,20 +139,57 @@ const TrainCabin: React.FC = () => {
     useEffect(() => {
         let animationFrame: number;
         const animateTrack = () => {
-            setTrackOffset(prev => (prev + speed * 0.1) % 100);
+            setTrackOffset(prev => (prev + displaySpeed * 0.1) % 100);
             animationFrame = requestAnimationFrame(animateTrack);
         };
         animationFrame = requestAnimationFrame(animateTrack);
         return () => cancelAnimationFrame(animationFrame);
-    }, [speed]);
+    }, [displaySpeed]);
+
+    // Smooth speed display update
+    useEffect(() => {
+        let animationFrameId: number;
+        let currentDisplaySpeed = displaySpeed;
+        
+        const updateSpeed = () => {
+            // If engine is off, speed should decrease to 0
+            if (engineStatus === 'off') {
+                if (currentDisplaySpeed > 0) {
+                    currentDisplaySpeed = Math.max(0, currentDisplaySpeed - 0.5);
+                    setDisplaySpeed(currentDisplaySpeed);
+                    animationFrameId = requestAnimationFrame(updateSpeed);
+                }
+            } 
+            // If engine is on, speed should approach target based on throttle
+            else {
+                const targetSpeed = throttlePosition * 1.2; // Same calculation as backend
+                
+                if (Math.abs(currentDisplaySpeed - speed) > 0.1) {
+                    // Smooth transition to actual backend speed
+                    currentDisplaySpeed = currentDisplaySpeed < speed 
+                        ? Math.min(speed, currentDisplaySpeed + 0.5)
+                        : Math.max(speed, currentDisplaySpeed - 0.5);
+                    
+                    setDisplaySpeed(Number(currentDisplaySpeed.toFixed(1)));
+                    animationFrameId = requestAnimationFrame(updateSpeed);
+                }
+            }
+        };
+        
+        animationFrameId = requestAnimationFrame(updateSpeed);
+        
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [speed, throttlePosition, engineStatus]);
 
     // Update prevSpeed for acceleration calculation
     useEffect(() => {
         const timer = setTimeout(() => {
-            setPrevSpeed(speed);
+            setPrevSpeed(displaySpeed);
         }, 1000);
         return () => clearTimeout(timer);
-    }, [speed]);
+    }, [displaySpeed]);
 
     const toggleEngine = () => {
         const newStatus = engineStatus === 'off' ? 'on' : 'off';
@@ -467,7 +505,7 @@ const TrainCabin: React.FC = () => {
                     <div className="circular-gauge">
                         <div className="gauge-inner">
                             <div className="gauge-title">SPEED</div>
-                            <div className="gauge-value">{speed.toFixed(1)}</div>
+                            <div className="gauge-value">{displaySpeed.toFixed(1)}</div>
                             <div className="gauge-unit">km/h</div>
                         </div>
                     </div>
@@ -570,7 +608,7 @@ const TrainCabin: React.FC = () => {
                         <div className="circular-gauge">
                             <div className="gauge-inner">
                                 <div className="gauge-title">ACCELERATION</div>
-                                <div className="gauge-value">{(speed - prevSpeed).toFixed(1)}</div>
+                                <div className="gauge-value">{(displaySpeed - prevSpeed).toFixed(1)}</div>
                                 <div className="gauge-unit">m/s²</div>
                             </div>
                         </div>
@@ -579,7 +617,11 @@ const TrainCabin: React.FC = () => {
                         <div className="circular-gauge">
                             <div className="gauge-inner">
                                 <div className="gauge-title">POWER</div>
-                                <div className="gauge-value">{throttlePosition}</div>
+                                <div className="gauge-value">
+                                    {engineStatus === 'on' 
+                                        ? Math.min(100, Math.round(throttlePosition + (displaySpeed * 0.2)))
+                                        : 0}
+                                </div>
                                 <div className="gauge-unit">%</div>
                             </div>
                         </div>
